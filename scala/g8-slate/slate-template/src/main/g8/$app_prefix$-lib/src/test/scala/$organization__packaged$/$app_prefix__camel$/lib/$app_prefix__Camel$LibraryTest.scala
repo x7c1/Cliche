@@ -1,4 +1,4 @@
-package $organization$.lib
+package $organization$.$app_prefix$.lib
 
 import org.specs2.mutable.Specification
 

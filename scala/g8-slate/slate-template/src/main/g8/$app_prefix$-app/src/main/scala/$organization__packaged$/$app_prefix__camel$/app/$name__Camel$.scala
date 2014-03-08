@@ -1,6 +1,6 @@
-package $organization$
+package $organization$.$app_prefix$.app
 
-import $organization$.lib.$app_prefix;format="Camel"$Library
+import $organization$.$app_prefix$.lib.$app_prefix;format="Camel"$Library
 
 object $name;format="Camel"$ extends App {
   val message = $app_prefix;format="Camel"$Library createMessageFor "world"
