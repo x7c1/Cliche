@@ -20,8 +20,37 @@ object CoralRootBuild extends Build{
 
   lazy val root = Project("root", file(".")).
     aggregate(coral, coralLibrary).
-    settings(CoralTask.settings:_*).
-    settings(
-      CoralTask.hello ~= { _ => println("(successfully greeted)")}
-    )
+    settings(CoralSampleTasks.toSeq:_*)
+
+    /*
+    intellij cannot resolve these dependencies
+    .settings(CoralTask.settings:_*)
+    .settings(
+      CoralTask.hello ~= { _ => println("(successfully greeted)")})
+    */
+
+  object CoralSampleTasks {
+    val dev = config("dev") describedAs "development config"
+
+    val prod = config("prod") describedAs "production config"
+
+    val endpoint = SettingKey[String]("endpoint", "api endpoint")
+
+    val say = TaskKey[Unit]("say", "a simple task experiment")
+
+    val sayTask = say <<= endpoint map { endpoint =>
+      println("endpoint : " + endpoint)
+    }
+    def commonTasks = Seq(sayTask)
+
+    def configValues = Seq(
+      endpoint in dev := "dev.example.com",
+      endpoint in prod := "prod.example.com" )
+
+    def toSeq = configValues ++
+      inConfig(dev)(commonTasks) ++
+      inConfig(prod)(commonTasks)
+
+  }
+
 }
