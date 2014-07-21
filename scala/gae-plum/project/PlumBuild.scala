@@ -21,7 +21,7 @@ object PlumBuild extends Build {
       .dependsOn(plumLibrary)
       .settings(
         libraryDependencies ++= Seq(
-          "org.mortbay.jetty" % "jetty" % "6.1.22" % "container",
+//          "org.mortbay.jetty" % "jetty" % "6.1.22" % "container",
           "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided"
         )
       )
