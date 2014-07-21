@@ -17,9 +17,6 @@ object PlumBuild extends Build {
       id = "plum-app",
       base = file("plum-app")
     )
-    println(System.getenv("APPENGINE_SDK_HOME"), 123)
-    println(System.getenv("MAVEN_REPOSITORY"), 456)
-
     application
       .dependsOn(plumLibrary)
       .settings(
