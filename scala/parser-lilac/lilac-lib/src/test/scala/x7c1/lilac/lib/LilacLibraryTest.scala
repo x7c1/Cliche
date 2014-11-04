@@ -11,10 +11,10 @@ object LilacLibraryTest extends Specification {
       "hello, earthlings!" === message
     }
     "parse required field" in {
-      val text = "required string user_name = 11;"
+      val text = "required com.example.string user_name = 11;"
       val field = Parser.parseAll(Parser.field, text).get
       field.fieldRule === Required
-      field.fieldType === "string"
+      field.fieldType === "com.example.string"
       field.fieldName === "user_name"
       field.tagNumber === 11
     }

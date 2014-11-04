@@ -15,13 +15,15 @@ object Parser extends RegexParsers {
   val assignNumber = "=" ~> """([1-9][0-9]*)""".r
 
   val field: Parser[Field] = {
+    val fieldType = identifier ~ ("." ~ identifier).* ^^ {
+      case head ~ tail =>
+        head + tail.map{ case dot ~ x => dot + x }.mkString
+    }
     def field(rule: RuleModifier) = {
-      val fieldType = identifier
-      val fieldName = identifier
       val options ="""\[.+\]""".r.? // TODO
-
-      rule.name ~> fieldType ~ fieldName ~ assignNumber ~ options <~ ";" ^^ {
-        case x ~ y ~ z ~ _ => new Field(rule, x, y, z.toInt)
+      rule.name ~> fieldType ~ identifier ~ assignNumber ~ options <~ ";" ^^ {
+        case x ~ y ~ z ~ _ =>
+          new Field(rule, fieldType = x, fieldName = y, tagNumber = z.toInt)
       }
     }
     field(Required) | field(Optional) | field(Repeated)
