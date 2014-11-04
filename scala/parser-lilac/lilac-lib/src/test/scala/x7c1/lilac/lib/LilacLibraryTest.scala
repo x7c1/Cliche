@@ -56,5 +56,31 @@ object LilacLibraryTest extends Specification {
       val (nestedField: Field) :: _ = nestedMessage.body.nodes
       nestedField.fieldName === "user_name"
     }
+    "parse enum" in {
+      val text =
+        """enum Alcohol{
+          |  WHISKY = 1;
+          |  ALE = 2;
+          |  LAGER = 3;
+          |}""".stripMargin
+
+      val enum = Parser.parseAll(Parser.enum, text).get
+      enum.name === "Alcohol"
+      enum.constants.map(_.value) === Seq("WHISKY", "ALE", "LAGER")
+      enum.constants.map(_.tagNumber) === Seq(1, 2, 3)
+    }
+    "parse enum in message" in {
+      val text =
+        """message SampleUser {
+          |  enum UserKind {
+          |    NORMAL = 1;
+          |    ADMIN = 2;
+          |  }
+          |}""".stripMargin
+
+      val message = Parser.parseAll(Parser.message, text).get
+      val (enum: Enum) :: _ = message.body.nodes
+      enum.name === "UserKind"
+    }
   }
 }
