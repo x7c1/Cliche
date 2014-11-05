@@ -82,5 +82,24 @@ object LilacLibraryTest extends Specification {
       val (enum: Enum) :: _ = message.body.nodes
       enum.name === "UserKind"
     }
+    "parse *.proto format" in {
+      val text =
+        """
+          |package com.example.alcohol;
+          |
+          |enum Beer {
+          |  LAGER = 1;
+          |}
+          |message Addict {
+          |  required string patient_id = 1;
+          |}
+        """.stripMargin
+
+      val proto = Parser.parseAll(Parser.proto, text).get
+      val (p: Package) :: (e: Enum) :: (m: Message) :: _ = proto
+      p.name === "com.example.alcohol"
+      e.name === "Beer"
+      m.name === "Addict"
+    }
   }
 }

@@ -10,6 +10,13 @@ object LilacLibrary {
 
 object Parser extends RegexParsers {
 
+  lazy val proto: Parser[List[Node]] = (`package` | `message` | `enum`).*
+
+  lazy val `package`: Parser[Package] =
+    "package" ~> qualifiedType <~ ";" ^^ {
+      case x => new Package(name = x)
+    }
+
   lazy val `message`: Parser[Message] =
     "message" ~> identifier ~ body ^^ {
       case n ~ b => new Message(name = n, body = b)
@@ -53,6 +60,8 @@ object Parser extends RegexParsers {
 }
 
 sealed trait Node
+
+class Package(val name: String) extends Node
 
 class Field(
   val fieldRule: RuleModifier,
