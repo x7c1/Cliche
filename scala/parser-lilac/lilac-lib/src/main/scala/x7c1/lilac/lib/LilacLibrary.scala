@@ -10,18 +10,34 @@ object LilacLibrary {
 
 object Parser extends RegexParsers {
 
-  val identifier = """[A-Za-z_]\w*""".r
+  lazy val `message`: Parser[Message] =
+    "message" ~> identifier ~ body ^^ {
+      case n ~ b => new Message(name = n, body = b)
+    }
 
-  val assignNumber = "=" ~> """([1-9][0-9]*)""".r
+  lazy val `enum`: Parser[Enum] = {
+    val constant = identifier ~ assignNumber <~ ";" ^^ {
+      case v ~ t => new EnumConstant(value = v, tagNumber = t.toInt)
+    }
+    "enum" ~> identifier ~ ("{" ~> constant.* <~ "}") ^^ {
+      case n ~ c => new Enum(name = n, constants = c)
+    }
+  }
 
-  val field: Parser[Field] = {
-    val fieldType = identifier ~ ("." ~ identifier).* ^^ {
+  lazy val identifier = """[A-Za-z_]\w*""".r
+
+  lazy val assignNumber = "=" ~> """([1-9][0-9]*)""".r
+
+  lazy val qualifiedType: Parser[String] =
+    identifier ~ ("." ~ identifier).* ^^ {
       case head ~ tail =>
         head + tail.map{ case dot ~ x => dot + x }.mkString
     }
+
+  lazy val field: Parser[Field] = {
     def field(rule: RuleModifier) = {
       val options ="""\[.+\]""".r.? // TODO
-      rule.name ~> fieldType ~ identifier ~ assignNumber ~ options <~ ";" ^^ {
+      rule.name ~> qualifiedType ~ identifier ~ assignNumber ~ options <~ ";" ^^ {
         case x ~ y ~ z ~ _ =>
           new Field(rule, fieldType = x, fieldName = y, tagNumber = z.toInt)
       }
@@ -30,23 +46,9 @@ object Parser extends RegexParsers {
   }
 
   lazy val body: Parser[Body] =
-    "{" ~> (field | message | enum).* <~ "}" ^^ {
+    "{" ~> (field | `message` | `enum`).* <~ "}" ^^ {
       case nodes => new Body(nodes)
     }
-
-  lazy val message: Parser[Message] =
-    "message" ~> identifier ~ body ^^ {
-      case n ~ b => new Message(name = n, body = b)
-    }
-
-  lazy val enum: Parser[Enum] = {
-    val constant = identifier ~ assignNumber <~ ";" ^^ {
-      case v ~ t => new EnumConstant(value = v, tagNumber = t.toInt)
-    }
-    "enum" ~> identifier ~ ("{" ~> constant.* <~ "}") ^^ {
-      case n ~ c => new Enum(name = n, constants = c)
-    }
-  }
 
 }
 

@@ -30,7 +30,7 @@ object LilacLibraryTest extends Specification {
     }
     "parse message" in {
       val text = "message SampleUser { required string user_name = 1; }"
-      val message = Parser.parseAll(Parser.message, text).get
+      val message = Parser.parseAll(Parser.`message`, text).get
       message.name === "SampleUser"
 
       val ((field: Field) :: tail) = message.body.nodes
@@ -45,7 +45,7 @@ object LilacLibraryTest extends Specification {
           |  message NestedUser { optional string user_name = 123; }
           |}""".stripMargin
 
-      val message = Parser.parseAll(Parser.message, text).get
+      val message = Parser.parseAll(Parser.`message`, text).get
       message.name === "SampleUser"
 
       val (field: Field) :: (nestedMessage: Message) :: _ = message.body.nodes
@@ -64,7 +64,7 @@ object LilacLibraryTest extends Specification {
           |  LAGER = 3;
           |}""".stripMargin
 
-      val enum = Parser.parseAll(Parser.enum, text).get
+      val enum = Parser.parseAll(Parser.`enum`, text).get
       enum.name === "Alcohol"
       enum.constants.map(_.value) === Seq("WHISKY", "ALE", "LAGER")
       enum.constants.map(_.tagNumber) === Seq(1, 2, 3)
@@ -78,7 +78,7 @@ object LilacLibraryTest extends Specification {
           |  }
           |}""".stripMargin
 
-      val message = Parser.parseAll(Parser.message, text).get
+      val message = Parser.parseAll(Parser.`message`, text).get
       val (enum: Enum) :: _ = message.body.nodes
       enum.name === "UserKind"
     }
