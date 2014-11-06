@@ -10,7 +10,10 @@ object LilacLibrary {
 
 object Parser extends RegexParsers {
 
-  lazy val proto: Parser[List[Node]] = (`package` | `message` | `enum`).*
+  lazy val proto: Parser[List[Node]] =
+    `package` ~ (`message` | `enum`).* ^^ {
+      case p ~ tail => p +: tail
+    }
 
   lazy val `package`: Parser[Package] =
     "package" ~> qualifiedType <~ ";" ^^ {
@@ -24,7 +27,7 @@ object Parser extends RegexParsers {
 
   lazy val `enum`: Parser[Enum] = {
     val constant = identifier ~ assignNumber <~ ";" ^^ {
-      case v ~ t => new EnumConstant(value = v, tagNumber = t.toInt)
+      case v ~ t => new EnumConstant(value = v, tagNumber = t)
     }
     "enum" ~> identifier ~ ("{" ~> constant.* <~ "}") ^^ {
       case n ~ c => new Enum(name = n, constants = c)
@@ -33,7 +36,10 @@ object Parser extends RegexParsers {
 
   lazy val identifier = """[A-Za-z_]\w*""".r
 
-  lazy val assignNumber = "=" ~> """([1-9][0-9]*)""".r
+  lazy val assignNumber: Parser[Int] =
+    "=" ~> """([1-9][0-9]*)""".r ^^ {
+      case x => x.toInt
+    }
 
   lazy val qualifiedType: Parser[String] =
     identifier ~ ("." ~ identifier).* ^^ {
@@ -46,7 +52,7 @@ object Parser extends RegexParsers {
       val options ="""\[.+\]""".r.? // TODO
       rule.name ~> qualifiedType ~ identifier ~ assignNumber ~ options <~ ";" ^^ {
         case x ~ y ~ z ~ _ =>
-          new Field(rule, fieldType = x, fieldName = y, tagNumber = z.toInt)
+          new Field(rule, fieldType = x, fieldName = y, tagNumber = z)
       }
     }
     field(Required) | field(Optional) | field(Repeated)
