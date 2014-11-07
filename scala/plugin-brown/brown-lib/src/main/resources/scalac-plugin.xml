@@ -1,0 +1,4 @@
+<plugin>
+    <name>brown-plugin</name>
+    <classname>x7c1.brown.lib.BrownPlugin</classname>
+</plugin>
