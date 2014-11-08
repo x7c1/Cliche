@@ -46,12 +46,13 @@ class NoirLibraryTest extends FunSpec with Matchers {
   }
   describe(NoirRenderer.getClass.getSimpleName){
     it("should render tree"){
-      val text = """x(y,a(b,c))"""
+      val text = """x(y,z(123),a(b,c))"""
       val tree = NoirParser.parseAll(NoirParser.tree, text).get
       val source = NoirRenderer.prettyPrint(tree)
       source shouldBe
         """x(
           |  y,
+          |  z(123),
           |  a(
           |    b,
           |    c))""".stripMargin
