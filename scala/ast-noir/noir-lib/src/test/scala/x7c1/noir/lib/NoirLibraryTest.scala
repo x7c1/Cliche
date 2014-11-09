@@ -41,7 +41,7 @@ class NoirLibraryTest extends FunSpec with Matchers {
       val text = "x().setFoo()"
       val tree = NoirParser.parseAll(NoirParser.receiverTree, text).get
       tree.message.name shouldBe "setFoo"
-      tree.tree.name shouldBe "x"
+      tree.receiver.name shouldBe "x"
     }
   }
   describe(NoirRenderer.getClass.getSimpleName){

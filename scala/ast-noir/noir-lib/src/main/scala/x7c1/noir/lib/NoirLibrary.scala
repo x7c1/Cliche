@@ -17,7 +17,7 @@ object NoirParser extends RegexParsers {
   lazy val receiverTree =
     tree ~ ("." ~> identifier) ~ body ^^ { case t ~ i ~ b =>
       ReceiverTree(
-        tree = t,
+        receiver = t,
         message = Message(name = i, b))
     }
 
@@ -41,7 +41,7 @@ case class Tree(
   nodes: Seq[Node]) extends Node
 
 case class ReceiverTree(
-  tree: Tree,
+  receiver: Tree,
   message: Message) extends Node
 
 case class Message(name: String, nodes: Seq[Node])
@@ -62,7 +62,7 @@ class NoirRenderer(indent: String){
     }
     node match {
       case tree: ReceiverTree =>
-        render(tree.tree, space) + "." + from(tree.message)
+        render(tree.receiver, space) + "." + from(tree.message)
       case Tree(name1, Seq(Tree(name2, Seq(Leaf(leaf))))) =>
         space + s"$name1($name2($leaf))"
       case Tree(name, Seq(Leaf(leaf))) =>
