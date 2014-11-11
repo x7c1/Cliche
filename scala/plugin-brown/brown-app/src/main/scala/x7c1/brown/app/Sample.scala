@@ -1,17 +1,5 @@
 package x7c1.brown.app
 
-class Sample[A](val sampleValue: A) extends Hoge with Fuga{
-  def sample = "sample"
-}
-
-trait Hoge {
-  def hoge = 1
-}
-
-trait Fuga {
-  def fuga = "fuga"
-}
-
 trait UserResponse extends Response[Seq[User]]{
 }
 
@@ -29,3 +17,17 @@ trait Page {
   def currentPage: Int
   def totalPages: Int
 }
+
+trait Foo[A, B] {
+  def foo: ((A, B), (A, B))
+}
+
+trait Bar {
+  def bar = "bar"
+}
+
+trait Baz[A] {
+  def baz: A => A
+}
+
+trait MergedSample extends Foo[String, Int] with Bar with Baz[Long]
