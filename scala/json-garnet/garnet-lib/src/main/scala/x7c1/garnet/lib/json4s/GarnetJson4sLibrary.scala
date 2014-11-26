@@ -1,9 +1,9 @@
-package x7c1.garnet.lib
+package x7c1.garnet.lib.json4s
 
 import org.json4s.DefaultFormats
 import org.json4s.native.JsonMethods.parse
 
-object GarnetLibrary {
+object GarnetJson4sLibrary {
   def createMessageFor(name: String) = s"hello, $name!"
 
   def getJsonAst(body: String) = {
