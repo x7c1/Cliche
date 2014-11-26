@@ -17,5 +17,10 @@ class GarnetJsonSprayLibraryTest extends FunSpec with Matchers {
       x.userId shouldBe 123
       x.userName shouldBe "John"
     }
+    it("should generate json from trait-instance"){
+      val struct = GarnetJsonSprayLibrary.getSampleStructure
+      struct.x === 123
+      struct.y === "hoge-"
+    }
   }
 }

@@ -26,6 +26,17 @@ object GarnetJsonSprayLibrary {
     json.convertTo[SampleGenericUserImpl]
     */
   }
+  def getSampleStructure = {
+    val s = SampleStructure(
+      x = 123,
+      y = "hoge-"
+    )
+    import spray.json.pimpAny
+    import SampleStructureProtocol._
+
+    val json = s.toJson
+    json.convertTo[SampleStructure]
+  }
 }
 
 //object MyProtocol extends DefaultJsonProtocol {
