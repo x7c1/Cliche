@@ -1,5 +1,6 @@
 package x7c1.garnet.lib.json4s
 
+import org.json4s.JValue
 import org.json4s.JsonAST.{JInt, JObject}
 import org.scalatest.{FunSpec, Matchers}
 
@@ -11,7 +12,7 @@ class GarnetJson4sLibraryTest extends FunSpec with Matchers {
       message should be("hello, earthlings!")
     }
     it("should parse json"){
-      val json = GarnetJson4sLibrary.getJsonAst("""{ "x1": 321 }""")
+      val json: JValue = GarnetJson4sLibrary.getJsonAst("""{ "x1": 321 }""")
       val JObject(List((key, JInt(value)))) = json
       key shouldBe "x1"
       value shouldBe 321

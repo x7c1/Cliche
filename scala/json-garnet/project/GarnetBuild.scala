@@ -20,6 +20,7 @@ object GarnetBuild extends Build {
   lazy val `garnet-lib` = project.
     settings(garnetSettings:_*).
     settings(libraryDependencies ++= Seq(
+      "io.spray" %%  "spray-json" % "1.3.1",
       "org.json4s" %% "json4s-native" % "3.2.11"
     ))
 
