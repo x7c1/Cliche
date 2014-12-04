@@ -2,7 +2,7 @@ package x7c1.garnet.lib.spray
 
 import spray.json.{JsValue, JsonParser}
 
-object GarnetJsonSprayLibrary {
+object GarnetSprayJsonLibrary {
 
   def getJsonAst(source: String): JsValue = {
     JsonParser(source)
