@@ -23,7 +23,7 @@ object AleBuild extends Build {
   lazy val `api-framework` = Project("api-fw", file("./api-framework")).
     settings(libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "salad-lib" % "salad-lib_2.11" % "0.1-SNAPSHOT"
+      "x7c1" % "salad-lib_2.11" % "0.1-SNAPSHOT"
     )).
     settings(aleSettings:_*)
 
