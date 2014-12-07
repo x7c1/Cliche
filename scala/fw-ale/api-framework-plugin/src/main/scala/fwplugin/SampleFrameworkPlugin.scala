@@ -1,3 +1,5 @@
+package fwplugin
+
 import sbt.Defaults.runnerInit
 import sbt.Keys._
 import sbt._

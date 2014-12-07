@@ -16,7 +16,7 @@ object AleBuild extends Build {
 
   lazy val `ale-api` = Project("ale-api", file("./ale-apps/app1-api")).
     settings(aleSettings:_*).
-    settings(SampleFrameworkPlugin.sampleSettings:_*).
+    settings(fwplugin.SampleFrameworkPlugin.sampleSettings:_*).
     dependsOn(`api-framework`).
     dependsOn(`ale-domain`)
 
