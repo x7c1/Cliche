@@ -1,4 +1,4 @@
-package sample
+package example
 
 import x7c1.salad.inspector.{TypeDigest, TypeReflector}
 
@@ -6,6 +6,18 @@ object InspectorSample extends App {
   val digest = TypeReflector.inspect[SampleStructure]
 
   println(dump(digest))
+  /*
+  example.SampleStructure
+    z : scala.collection.immutable.List[scala.Int]
+    y : example.SampleGeneric[java.lang.String,scala.Long,scala.Int]
+      c : example.Nested[example.Nested[example.Nested[scala.Int]]]
+        foo : example.Nested[example.Nested[scala.Int]]
+          foo : example.Nested[scala.Int]
+            foo : scala.Int
+      b : scala.Long
+      a : java.lang.String
+    x : scala.Int
+   */
 
   def dump(digest: TypeDigest, indent: Int = 1): String = {
     val lines = digest.typedName +:
@@ -19,11 +31,11 @@ object InspectorSample extends App {
 
 trait SampleStructure {
   def x: Int
-  def y: SampleValues[String, Long, Int]
+  def y: SampleGeneric[String, Long, Int]
   def z: List[Int]
 }
 
-trait SampleValues [A, B, C]{
+trait SampleGeneric [A, B, C]{
   def a: A
   def b: B
   def c: Nested[Nested[Nested[C]]]
