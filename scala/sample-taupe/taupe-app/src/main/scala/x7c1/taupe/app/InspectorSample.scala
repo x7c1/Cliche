@@ -5,6 +5,18 @@ import x7c1.salad.inspector.{TypeDigest, TypeReflector}
 object InspectorSample extends App {
   val digest = TypeReflector.inspect[SampleStructure]
 
+  println(digest.members.find(_.decodedName == "z").map(_.resultType.typedName))
+  // Some(scala.collection.immutable.List[scala.Int])
+
+  val name = for {
+    y <- digest.members.find(_.decodedName == "y")
+    b <- y.resultType.members.find(_.decodedName == "b")
+  } yield {
+    b.resultType.typedName
+  }
+  println(name)
+  // Some(scala.Long)
+
   println(dump(digest))
   /*
   example.SampleStructure
