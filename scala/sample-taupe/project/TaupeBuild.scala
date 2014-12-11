@@ -17,7 +17,7 @@ object TaupeBuild extends Build {
   lazy val `taupe-app` = project.
     settings(taupeSettings:_*).
     dependsOn(`taupe-lib`).
-    dependsOn(ProjectRef(uri("git://github.com/x7c1/Salad.git"), "salad-lib"))
+    dependsOn(ProjectRef(uri("git://github.com/x7c1/Salad.git#0.1"), "salad-lib"))
 
   lazy val `taupe-lib` = project.
     settings(taupeSettings:_*)
