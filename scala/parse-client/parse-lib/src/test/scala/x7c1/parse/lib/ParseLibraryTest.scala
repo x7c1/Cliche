@@ -1,6 +1,8 @@
 package x7c1.parse.lib
 
 import org.scalatest.{FunSpec, Matchers}
+import x7c1.parse.lib.query.{ParseQuery, ColumnDefinitions}
+import x7c1.parse.lib.query.provider.Imports
 
 class ParseLibraryTest extends FunSpec with Matchers {
 
@@ -14,7 +16,9 @@ class ParseLibraryTest extends FunSpec with Matchers {
 
 class ParseNotifierClientTest extends FunSpec with Matchers {
 
-  object column extends ColumnDefinitions with DefaultAdapters{
+  object column extends ColumnDefinitions {
+    import Imports._
+
     val channels = define[String]("channels")
     val userName = define[String]("userName")
     val userId = define[Int]("userId")
