@@ -21,7 +21,7 @@ object ColorfulBuild extends Build {
     settings(colorfulSettings:_*).
     dependsOn(ProjectRef(
       uri("git://github.com/fpinscala/fpinscala.git#fe5bca4339"),
-      "exercises"
+      "answers"
     ))
 
   lazy val root = Project("colorful", file(".")).
