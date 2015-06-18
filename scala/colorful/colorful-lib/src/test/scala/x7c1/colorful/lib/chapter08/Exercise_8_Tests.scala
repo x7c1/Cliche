@@ -3,7 +3,7 @@ package x7c1.colorful.lib.chapter08
 import org.scalatest.{FlatSpecLike, Matchers}
 import x7c1.colorful.lib.chapter06.Repeat
 
-class Exercise_8_4_Tests  extends FlatSpecLike with Matchers {
+class Exercise_8_4_Test extends FlatSpecLike with Matchers {
   "choose" can "generate int values in target range" in {
     val (start, end) = (10, 100)
     val gen = Gen.choose(start, end)
@@ -15,7 +15,7 @@ class Exercise_8_4_Tests  extends FlatSpecLike with Matchers {
   }
 }
 
-class Exercise_8_5_Tests  extends FlatSpecLike with Matchers {
+class Exercise_8_5_Test extends FlatSpecLike with Matchers {
 
   "unit" should "always generate given value" in {
     val original = 123
@@ -38,7 +38,7 @@ class Exercise_8_5_Tests  extends FlatSpecLike with Matchers {
   }
 }
 
-class Exercise_8_6_Tests  extends FlatSpecLike with Matchers {
+class Exercise_8_6_Test extends FlatSpecLike with Matchers {
   "listOfN" should "generate lists of length n" in {
     val (start, end) = (10, 100)
     val gen = Gen.choose(start, end)
@@ -48,7 +48,7 @@ class Exercise_8_6_Tests  extends FlatSpecLike with Matchers {
   }
 }
 
-class Exercise_8_7_Tests  extends FlatSpecLike with Matchers {
+class Exercise_8_7_Test extends FlatSpecLike with Matchers {
   "union" should "generate value" in {
     val range1 = 1 to 10
     val gen1 = Gen.choose(range1.start, range1.end)
@@ -65,7 +65,7 @@ class Exercise_8_7_Tests  extends FlatSpecLike with Matchers {
   }
 }
 
-class Exercise_8_8_Tests  extends FlatSpecLike with Matchers {
+class Exercise_8_8_Test extends FlatSpecLike with Matchers {
   "weighted" should "generate value with probability" in {
     val range1 = 1 to 10
     val gen1 = Gen.choose(range1.start, range1.end)

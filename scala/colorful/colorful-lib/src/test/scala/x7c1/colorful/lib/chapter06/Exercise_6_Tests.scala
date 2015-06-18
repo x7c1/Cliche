@@ -2,7 +2,7 @@ package x7c1.colorful.lib.chapter06
 
 import org.scalatest.{FlatSpecLike, Matchers}
 
-class Exercise_6_9_Tests extends FlatSpecLike with Matchers {
+class Exercise_6_9_Test extends FlatSpecLike with Matchers {
 
   "mapNew" can "behave same as map" in {
     val f: Int => Double = _ / (Int.MaxValue.toDouble + 1)
@@ -29,7 +29,7 @@ class Exercise_6_9_Tests extends FlatSpecLike with Matchers {
   }
 }
 
-class Exercise_6_10_Tests extends FlatSpecLike with Matchers {
+class Exercise_6_10_Test extends FlatSpecLike with Matchers {
 
   case class Container[A](value: A)
 
@@ -73,7 +73,7 @@ class Exercise_6_10_Tests extends FlatSpecLike with Matchers {
   }
 }
 
-class Exercise_6_11_Tests extends FlatSpecLike with Matchers {
+class Exercise_6_11_Test extends FlatSpecLike with Matchers {
   import Exercise_6_11.simulateMachine
 
   val original = Machine(
