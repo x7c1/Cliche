@@ -18,6 +18,25 @@ object PropTestHelpers {
       case _ =>
     }
   }
+  def functionMonoidProp[A, B]
+    (m: Monoid[A => B], domain: Gen[A => B])
+    (is: (A => B, A => B) => Boolean) = {
+
+    import m.{op, zero}
+
+    Prop.forAll(Gen.listOfN(3, domain)){
+      case List(x, y, z) =>
+        val associativity =  {
+          val (f, g) = (op(op(x, y), z), op(x, op(y, z)))
+          is(f, g)
+        }
+        val identity = {
+          is(op(x, zero), x) && is(op(zero, x), x)
+        }
+        associativity && identity
+    }
+  }
+
 }
 
 class Exercise_10_1_Test extends FlatSpecLike with Matchers {
@@ -65,7 +84,7 @@ class Exercise_10_2_Test extends FlatSpecLike with Matchers {
 
 class Exercise_10_3_Test extends FlatSpecLike with Matchers {
   import Exercise_10_3.endoMonoid
-  import PropTestHelpers.runProp
+  import PropTestHelpers.{runProp, functionMonoidProp}
   import x7c1.colorful.lib.chapter06.State
 
   type Endo[A] = A => A
@@ -84,21 +103,7 @@ class Exercise_10_3_Test extends FlatSpecLike with Matchers {
       val d3 = endo(_ / 33)
       Gen.union(Gen.union(d1, d2), d3)
     }
-    val monoid = endoMonoid[Int]
-    import monoid.{op, zero}
-
-    Prop.forAll(Gen.listOfN(3, domain)){
-      case List(x, y, z) =>
-        val associativity =  {
-          val (f, g) = (op(op(x, y), z), op(x, op(y, z)))
-          isIntEndoEqual(f, g)
-        }
-        val identity = {
-          isIntEndoEqual(op(x, zero), x) &&
-          isIntEndoEqual(op(zero, x), x)
-        }
-        associativity && identity
-    }
+    functionMonoidProp(m, domain)(isIntEndoEqual)
   }
 
   "endoMonoid" should "be Monoid" in {
@@ -166,7 +171,7 @@ class Exercise_10_8_Test extends FlatSpecLike with Matchers {
 
 class Exercise_10_9_Test extends FlatSpecLike with Matchers {
   import Exercise_10_4.monoidLaws
-  import Exercise_10_9.{isSorted, Piece, comparatorMonoid, isAscendingOrdered, isDescendingOrdered}
+  import Exercise_10_9.{Piece, comparatorMonoid, isAscendingOrdered, isDescendingOrdered, isSorted}
   import PropTestHelpers.runProp
 
   def pieceProp(m: Monoid[Piece]) = {
@@ -221,7 +226,7 @@ class Exercise_10_11_Test extends FlatSpecLike with Matchers {
 }
 
 class Exercise_10_13_Test extends FlatSpecLike with Matchers {
-  import Exercise_10_13.{TreeFoldable, Branch, Leaf}
+  import Exercise_10_13.{Branch, Leaf, TreeFoldable}
 
   val tree = Branch(
     Branch(Leaf("1"), Leaf("2")),
@@ -271,7 +276,7 @@ class Exercise_10_14_Test extends FlatSpecLike with Matchers {
 }
 
 class Exercise_10_15_Test extends FlatSpecLike with Matchers {
-  import Exercise_10_13.{TreeFoldable, Branch, Leaf}
+  import Exercise_10_13.{Branch, Leaf, TreeFoldable}
   import Exercise_10_14.OptionFoldable
 
   "toList" can "generate list from TreeFoldable" in {
@@ -284,5 +289,59 @@ class Exercise_10_15_Test extends FlatSpecLike with Matchers {
   "toList" can "generate list from OptionFoldable" in {
     OptionFoldable.toList(Some("a")) shouldBe List("a")
     OptionFoldable.toList(None) shouldBe List()
+  }
+}
+
+class Exercise_10_16_Test extends FlatSpecLike with Matchers {
+  import Exercise_10_1.intAddition
+  import Exercise_10_16.productMonoid
+  import Exercise_10_5.stringMonoid
+  import PropTestHelpers.runProp
+
+  def productProp(m: Monoid[(Int, String)]) = {
+    val domain = Gen.choose(-100, 100).map2(Gen.stringN(100)){ (i, s) => (i, s) }
+    monoidLaws(m, domain)
+  }
+  "productMonoid" should "be Monoid" in {
+    val monoid: Monoid[(Int, String)] = productMonoid(intAddition, stringMonoid)
+    runProp(productProp(monoid))
+  }
+}
+
+class Exercise_10_17_Test extends FlatSpecLike with Matchers {
+  import Exercise_10_17.functionMonoid
+  import PropTestHelpers.{runProp, functionMonoidProp}
+  import Exercise_10_5.stringMonoid
+
+  type F = Int => String
+  def isFunctionEqual: (F, F) => Boolean = { (f, g) =>
+    val gen = Gen.choose(-100, 100)
+    val (maxSize, testCases, rng) = (100, 100, SimpleRNG(1))
+    val prop = Prop.forAll(gen){ i => f(i) == g(i) }
+    ! prop.run(maxSize, testCases, rng).isFalsified
+  }
+
+  def monoidProp(m: Monoid[Int => String]) = {
+    val domain: Gen[Int => String] = Gen.boolean map {
+      case true =>
+        int => (int * 2).toString
+      case false =>
+        int => (int - 123).toString
+    }
+    functionMonoidProp(m, domain)(isFunctionEqual)
+  }
+
+  "functionMonoid" should "be Monoid" in {
+    val monoid: Monoid[Int => String] = functionMonoid(stringMonoid)
+    runProp(monoidProp(monoid))
+  }
+}
+
+class Exercise_10_18_Test extends FlatSpecLike with Matchers {
+  import Exercise_10_18.bag
+
+  it should "compute a bag" in {
+    val x = Vector("a", "rose", "is", "a", "rose")
+    bag(x) shouldBe Map("a" -> 2, "rose" -> 2, "is" -> 1)
   }
 }
