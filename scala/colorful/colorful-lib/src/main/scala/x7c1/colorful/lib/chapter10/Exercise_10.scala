@@ -40,6 +40,41 @@ object Monoid {
   }
 
 }
+
+sealed trait WC
+
+case class Stub(chars: String) extends WC
+
+case class Part(lStub: String, words: Int, rStub: String) extends WC
+
+object WC {
+
+  /* 10.10 */
+
+  val wcMonoid = new Monoid[WC] {
+    override def op(a1: WC, a2: WC): WC = (a1, a2) match {
+      case (Stub(chars), Part(l, words, r)) => Part(chars + l, words, r)
+      case (Part(l, words, r), Stub(chars)) => Part(l, words, r + chars)
+      case (Stub(chars1), Stub(chars2)) => Stub(chars1 + chars2)
+      case (Part(l1, w1, r1), Part(l2, w2, r2)) =>
+        val w = if ((r1 + l2).isEmpty) 0 else 1
+        Part(l1, w1 + w + w2, r2)
+    }
+    override def zero: WC = Stub("")
+  }
+}
+
+import scala.language.higherKinds
+trait Foldable[F[_]] {
+  def foldRight[A, B](as: F[A])(z: B)(f: (A,B) => B): B
+  def foldLeft[A, B](as: F[A])(z: B)(f: (B,A) => B): B
+  def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B
+  def concatenate[A](as: F[A])(m: Monoid[A]): A
+
+  /* 10.15 */
+  def toList[A](fa: F[A]): List[A] = foldLeft(fa)(List[A]())(_ :+ _)
+}
+
 object Exercise_10_1 {
 
   val intAddition: Monoid[Int] = new Monoid[Int] {
@@ -222,4 +257,99 @@ object Exercise_10_9 {
     pieceFor(list).exists(_._4)
   }
 
+}
+
+object Exercise_10_11 {
+  def countWords(x: String): Int = {
+    val wc = Monoid.foldMapV(x, WC.wcMonoid){
+      case char if char == ' ' => Part("", 0, "")
+      case char => Stub(char.toString)
+    }
+    def flatten(x: String) = if (x.isEmpty) 0 else 1
+
+    wc match {
+      case Stub(chars) => 1
+      case Part(l, words, r) => flatten(l) + words + flatten(r)
+    }
+  }
+}
+
+object Exercise_10_12 {
+
+  object ListFoldable extends Foldable[List]{
+    override def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B = {
+      as.foldRight(z)(f)
+    }
+    override def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = {
+      as.foldLeft(z)(f)
+    }
+    override def concatenate[A](as: List[A])(m: Monoid[A]): A = {
+      as.foldLeft(m.zero)(m.op)
+    }
+    override def foldMap[A, B](as: List[A])(f: (A) => B)(mb: Monoid[B]): B = {
+      Monoid.foldMap(as, mb)(f)
+    }
+  }
+
+  /*
+  it looks obvious without implementation :(
+  object FoldableIndexedSeq extends Foldable[IndexedSeq]{
+    foldMap -> foldMapV
+    ...
+  }
+  object FoldableStream extends...
+  */
+}
+
+object Exercise_10_13 {
+
+  sealed trait Tree[+A]
+
+  case class Leaf[A](value: A) extends Tree[A]
+
+  case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+
+  object TreeFoldable extends Foldable[Tree] {
+
+    override def foldRight[A, B](as: Tree[A])(z: B)(f: (A, B) => B): B = as match {
+      case Leaf(a) => f(a, z)
+      case Branch(left, right) => foldRight(left)(foldRight(right)(z)(f))(f)
+    }
+    override def foldLeft[A, B](as: Tree[A])(z: B)(f: (B, A) => B): B = as match {
+      case Leaf(a) => f(z, a)
+      case Branch(left, right) => foldLeft(right)(foldLeft(left)(z)(f))(f)
+    }
+    override def concatenate[A](as: Tree[A])(m: Monoid[A]): A = {
+      foldLeft(as)(m.zero)(m.op)
+    }
+    override def foldMap[A, B](as: Tree[A])(f: (A) => B)(mb: Monoid[B]): B =
+      foldLeft(as)(mb.zero){ (b, a) => mb.op(b, f(a)) }
+  }
+}
+
+object Exercise_10_14 {
+
+  object OptionFoldable extends Foldable[Option] {
+
+    override def foldRight[A, B](as: Option[A])(z: B)(f: (A, B) => B): B =
+      as match {
+        case Some(a) => f(a, z)
+        case None => z
+      }
+    override def foldLeft[A, B](as: Option[A])(z: B)(f: (B, A) => B): B =
+      as match {
+        case Some(a) => f(z, a)
+        case None => z
+      }
+    override def concatenate[A](as: Option[A])(m: Monoid[A]): A =
+      as match {
+        case Some(a) => a
+        case None => m.zero
+      }
+    override def foldMap[A, B](as: Option[A])(f: (A) => B)(mb: Monoid[B]): B =
+      as match {
+        case Some(a) => f(a)
+        case None => mb.zero
+      }
+  }
 }

@@ -190,3 +190,99 @@ class Exercise_10_9_Test extends FlatSpecLike with Matchers {
     isDescendingOrdered(IndexedSeq(0, 1, 2)) shouldBe false
   }
 }
+
+class Exercise_10_10_Test extends FlatSpecLike with Matchers {
+  import PropTestHelpers.runProp
+
+  def wcProp(m: Monoid[WC]) = {
+    val gen = Gen.stringN(100).map2(Gen.choose(-100, 100)){ (s, i) => (s, i) }
+    val domain = gen.map2(Gen.boolean){ case ((s, i), b) =>
+      if (b) Stub(s)
+      else {
+        val (x, y) = s.splitAt(s.length / 2)
+        Part(x, i, y)
+      }
+    }
+    monoidLaws(m, domain)
+  }
+  "wcMonoid" should "be Monoid" in {
+    runProp(wcProp(WC.wcMonoid))
+  }
+}
+
+class Exercise_10_11_Test extends FlatSpecLike with Matchers {
+  import Exercise_10_11.countWords
+
+  "countWord" can "count words in a string" in {
+    countWords("ab cd ef") shouldBe 3
+    countWords("ab  cd  ef  ") shouldBe 3
+    countWords("  ab  cd  ef  ") shouldBe 3
+  }
+}
+
+class Exercise_10_13_Test extends FlatSpecLike with Matchers {
+  import Exercise_10_13.{TreeFoldable, Branch, Leaf}
+
+  val tree = Branch(
+    Branch(Leaf("1"), Leaf("2")),
+    Branch(Leaf("3"), Leaf("4"))
+  )
+  behavior of "TreeFoldable"
+
+  it should "have foldLeft" in {
+    TreeFoldable.foldLeft(tree)("!"){_ + _} shouldBe "!1234"
+  }
+  it should "have foldRight" in {
+    TreeFoldable.foldRight(tree)("!"){_ + _} shouldBe "1234!"
+  }
+  it should "have concatenate" in {
+    import Exercise_10_5.stringMonoid
+    TreeFoldable.concatenate(tree)(stringMonoid) shouldBe "1234"
+  }
+  it should "have foldMap" in {
+    import Exercise_10_1.intAddition
+    TreeFoldable.foldMap(tree)(_.toInt)(intAddition) shouldBe 10
+  }
+}
+
+
+class Exercise_10_14_Test extends FlatSpecLike with Matchers {
+  import Exercise_10_14.OptionFoldable
+
+  behavior of "OptionFoldable"
+
+  it should "have foldLeft" in {
+    OptionFoldable.foldLeft(Some("a"))("!"){_ + _} shouldBe "!a"
+    OptionFoldable.foldLeft(None)("!"){_ + _} shouldBe "!"
+  }
+  it should "have foldRight" in {
+    OptionFoldable.foldRight(Some("a"))("!"){_ + _} shouldBe "a!"
+    OptionFoldable.foldRight(None: Option[String])("!"){_ + _} shouldBe "!"
+  }
+  it should "have concatenate" in {
+    import Exercise_10_5.stringMonoid
+    OptionFoldable.concatenate(Some("a"))(stringMonoid) shouldBe "a"
+    OptionFoldable.concatenate(None)(stringMonoid) shouldBe ""
+  }
+  it should "have foldMap" in {
+    import Exercise_10_1.intAddition
+    OptionFoldable.foldMap(Some("1"))(_.toInt)(intAddition) shouldBe 1
+  }
+}
+
+class Exercise_10_15_Test extends FlatSpecLike with Matchers {
+  import Exercise_10_13.{TreeFoldable, Branch, Leaf}
+  import Exercise_10_14.OptionFoldable
+
+  "toList" can "generate list from TreeFoldable" in {
+    val tree = Branch(
+      Branch(Leaf("1"), Leaf("2")),
+      Branch(Leaf("3"), Leaf("4"))
+    )
+    TreeFoldable.toList(tree) shouldBe List("1", "2", "3", "4")
+  }
+  "toList" can "generate list from OptionFoldable" in {
+    OptionFoldable.toList(Some("a")) shouldBe List("a")
+    OptionFoldable.toList(None) shouldBe List()
+  }
+}

@@ -18,7 +18,7 @@ case class Gen[+A](sample: State[RNG, A]){
 
   def unsized: SGen[A] = SGen(i => this)
 
-  /* other helper */
+  /* other helpers */
 
   def map[B](f: A => B): Gen[B] = {
     Gen(sample.map(f))
@@ -90,6 +90,10 @@ object Gen {
     SGen(n => listOfN(n max 1, g))
   }
 
+  /* other helpers */
+
+  def stringN(n: Int): Gen[String] =
+    listOfN(n, choose(0,127)).map(_.map(_.toChar).mkString)
 }
 
 object Prop {
