@@ -111,3 +111,16 @@ class Exercise_11_8_Tests  extends FlatSpecLike with Matchers {
     listMonad.flatMap_byCompose_4(ma)(f) shouldBe List(10, 100)
   }
 }
+
+class Exercise_11_11_Tests  extends FlatSpecLike with Matchers {
+  import Exercise_11_1.listMonad
+
+  "identity laws" should "hold at listMonad" in {
+    import listMonad.{compose, unit}
+
+    val f = (i: Int) => List(i * 10)
+    compose(f, unit(_: Int))(10) shouldBe f(10)
+    compose(unit(_: Int), f)(10) shouldBe f(10)
+  }
+
+}

@@ -99,7 +99,7 @@ trait Monad[F[_]]extends Functor[F] {
       (flatMap[B, C] _).compose[A] _ apply f
   }
   def compose8[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
-      (flatMap[B, C] _).compose[A]
+    (flatMap[B, C] _).compose[A]
   }
   def compose9[A,B,C]: (A => F[B]) => (A => (B => F[C]) => F[C]) = {
     (flatMap[B, C] _).compose[A]
@@ -212,4 +212,36 @@ object Exercise_11_5 {
       x = 2, n = 3
       => List(List(1,1,1), List(1,1,2), List(1,2,1), L(1,2,2), ...)
    */
+}
+
+object Exercise_11_10 {
+  /*
+    compose(f, unit) == f
+      --> compose(f, unit)(n) == f(n)
+      --> { a => flatMap(f(a))(unit) }(n) == f(n)
+      --> flatMap(f(n))(unit) == f(n)
+      --> flatMap(x)(unit) == x
+
+    compose(unit, f) == f
+      --> compose(unit, f)(y) == f(y)
+      --> { a => flatMap(unit(a))(f) }(y) == f(y)
+      --> flatMap(unit(y))(f) == f(y)
+   */
+}
+
+object Exercise_11_11 {
+  /*
+    compose(f, unit) == f
+      --> compose(f, List(_))(n) == f(n)
+      --> { a => flatMap(f(a))(List(_)) }(n) == f(n)
+      --> flatMap(f(n))(List(_)) == f(n)
+      --> flatMap(f(n))(List(_)) == f(n)
+      --> f(n) == f(n)
+
+    compose(unit, f) == f
+      --> compose(List(_), f)(y) == f(y)
+      --> { a => flatMap(List(a))(f) }(y) == f(y)
+      --> flatMap(List(y))(f) == f(y)
+      --> f(y) == f(y)
+ */
 }
