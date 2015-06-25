@@ -1,6 +1,6 @@
 package x7c1.colorful.lib.chapter11
 
-import org.scalatest.{Matchers, FlatSpecLike}
+import org.scalatest.{FlatSpecLike, Matchers}
 
 class Exercise_11_3_Tests  extends FlatSpecLike with Matchers {
   import Exercise_11_1.optionMonad
@@ -24,7 +24,7 @@ class Exercise_11_3_Tests  extends FlatSpecLike with Matchers {
 }
 
 class Exercise_11_4_Tests  extends FlatSpecLike with Matchers {
-  import Exercise_11_1.{optionMonad, listMonad}
+  import Exercise_11_1.{listMonad, optionMonad}
 
   "listMonad" should "have replicateM" in {
     /*
@@ -83,5 +83,31 @@ class Exercise_11_6_Tests  extends FlatSpecLike with Matchers {
 
     val f2: F = i => if (i % 2 == 0) Some(true) else None
     optionMonad.filterM(List(1, 3))(f2) shouldBe None
+  }
+}
+
+class Exercise_11_7_Tests  extends FlatSpecLike with Matchers {
+  import Exercise_11_1.listMonad
+
+  "listMonad" should "have compose" in {
+    val f = (s: String) => List(s.toInt)
+    val g = (i: Int) => List((i * 10).toDouble -> (i * 100).toDouble)
+    val h = listMonad.compose(f, g)
+    h("2") shouldBe List(20.0 -> 200.0)
+  }
+}
+
+class Exercise_11_8_Tests  extends FlatSpecLike with Matchers {
+  import Exercise_11_1.listMonad
+
+  "listMonad" should "have flatMap_byCompose" in {
+    val f = (s: String) => List(s.toInt)
+    val ma = List("10", "100")
+    listMonad.flatMap_byCompose(ma)(f) shouldBe List(10, 100)
+  }
+  "listMonad" should "have flatMap_byCompose_4" in {
+    val f = (s: String) => List(s.toInt)
+    val ma = List("10", "100")
+    listMonad.flatMap_byCompose_4(ma)(f) shouldBe List(10, 100)
   }
 }
