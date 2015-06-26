@@ -19,7 +19,10 @@ trait Functor[F[_]] {
   }
 }
 
-trait Monad[F[_]]extends Functor[F] {
+trait Monad[F[_]]extends Functor[F]
+  with Exercise_11_8[F]
+  with Exercise_11_13[F]
+{
   def unit[A](a: => A): F[A]
 
   def flatMap[A,B](ma: F[A])(f: A => F[B]): F[B]
@@ -72,84 +75,11 @@ trait Monad[F[_]]extends Functor[F] {
       flatMap(f(a))(g)
   }
 
-  /* before 11.8 */
+  /* 11.12 */
 
-  def compose2[A,B,C]:  (A => F[B]) => (B => F[C]) => (A => F[C]) = {
-    f => g => a => (flatMap[B, C] _ compose f) apply a apply g
+  def join[A](mma: F[F[A]]): F[A] = {
+    flatMap(mma){x => x}
   }
-  def compose3[A,B,C]: (A => F[B]) => (B => F[C]) => A => F[C] = {
-    (f: A => F[B]) => (g: B => F[C]) => (a: A) =>
-      (flatMap[B, C] _ compose f apply a) apply g
-  }
-  // exchange arguments order (a with g)
-  def compose4[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
-    (f: A => F[B]) => (a: A) => (g: B => F[C]) =>
-      (flatMap[B, C] _ compose f apply a) apply g
-  }
-  def compose5[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
-    (f: A => F[B]) => (a: A) =>
-      flatMap[B, C] _ compose f apply a
-  }
-  def compose6[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
-    (f: A => F[B]) =>
-      flatMap[B, C] _ compose f
-  }
-  def compose7[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
-    (f: A => F[B]) =>
-      (flatMap[B, C] _).compose[A] _ apply f
-  }
-  def compose8[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
-    (flatMap[B, C] _).compose[A]
-  }
-  def compose9[A,B,C]: (A => F[B]) => (A => (B => F[C]) => F[C]) = {
-    (flatMap[B, C] _).compose[A]
-  }
-
-  /*
-  class Sample[A, B]{
-    def original: A => B = ???
-    def composed[C]: (C => A) => (C => B) = original.compose[C]
-  }
-  */
-
-  /* 11.8 */
-
-  def flatMap_byCompose[A, B](ma: F[A])(f: A => F[B]): F[B] = {
-    def revertComposing[X, Y](c: X)
-      (f: (X => F[A]) => (X => Y)): F[A] => Y = {
-      x => f(_ => x)(c)
-    }
-    def h[X]: (X => F[A]) => X => (A => F[B]) => F[B] = {
-      f => x => g => compose(f, g)(x)
-    }
-    revertComposing(123)(h)(ma)(f)
-  }
-
-  def flatMap_byCompose_2[A, B](ma: F[A])(f: A => F[B]): F[B] = {
-    def revertComposing[X](c: X)
-      (f: (X => F[A]) => (A => F[B]) => (X => F[B])): F[A] => (A => F[B]) => F[B] = {
-      fb => g => f(_ => fb)(g)(c)
-    }
-     def h[X]: (X => F[A]) => (A => F[B]) => X => F[B] = {
-       f => g => compose(f, g)
-     }
-     revertComposing(123)(h)(ma)(f)
-
-    // or use currying
-    // revertCompose(123)((compose[Int, A, B] _).curried)(ma)(f)
-  }
-
-  def flatMap_byCompose_3[A, B](ma: F[A])(f: A => F[B]): F[B] = {
-    def revertComposing[X](c: X): F[A] => (A => F[B]) => F[B] = {
-      fb => g => compose[X, A, B](_ => fb, g)(c)
-    }
-    revertComposing(123)(ma)(f)
-  }
-
-  def flatMap_byCompose_4[A, B](ma: F[A])(f: A => F[B]): F[B] = {
-    compose((_: Int) => ma, f)(123)
-  }
-
 }
 
 object Monad {
@@ -214,6 +144,85 @@ object Exercise_11_5 {
    */
 }
 
+trait Exercise_11_8[F[_]] {
+  self: Monad[F] =>
+
+  def compose2[A,B,C]:  (A => F[B]) => (B => F[C]) => (A => F[C]) = {
+    f => g => a => (flatMap[B, C] _ compose f) apply a apply g
+  }
+  def compose3[A,B,C]: (A => F[B]) => (B => F[C]) => A => F[C] = {
+    (f: A => F[B]) => (g: B => F[C]) => (a: A) =>
+      (flatMap[B, C] _ compose f apply a) apply g
+  }
+  // exchange arguments order (a with g)
+  def compose4[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
+    (f: A => F[B]) => (a: A) => (g: B => F[C]) =>
+      (flatMap[B, C] _ compose f apply a) apply g
+  }
+  def compose5[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
+    (f: A => F[B]) => (a: A) =>
+      flatMap[B, C] _ compose f apply a
+  }
+  def compose6[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
+    (f: A => F[B]) =>
+      flatMap[B, C] _ compose f
+  }
+  def compose7[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
+    (f: A => F[B]) =>
+      (flatMap[B, C] _).compose[A] _ apply f
+  }
+  def compose8[A,B,C]: (A => F[B]) => A => (B => F[C]) => F[C] = {
+    (flatMap[B, C] _).compose[A]
+  }
+  def compose9[A,B,C]: (A => F[B]) => (A => (B => F[C]) => F[C]) = {
+    (flatMap[B, C] _).compose[A]
+  }
+
+  /*
+  class Sample[A, B]{
+    def original: A => B = ???
+    def composed[C]: (C => A) => (C => B) = original.compose[C]
+  }
+  */
+
+  def flatMap_byCompose[A, B](ma: F[A])(f: A => F[B]): F[B] = {
+    def revertComposing[X, Y](c: X)
+      (f: (X => F[A]) => (X => Y)): F[A] => Y = {
+      x => f(_ => x)(c)
+    }
+    def h[X]: (X => F[A]) => X => (A => F[B]) => F[B] = {
+      f => x => g => compose(f, g)(x)
+    }
+    revertComposing(123)(h)(ma)(f)
+  }
+
+  def flatMap_byCompose_2[A, B](ma: F[A])(f: A => F[B]): F[B] = {
+    def revertComposing[X](c: X)
+      (f: (X => F[A]) => (A => F[B]) => (X => F[B])): F[A] => (A => F[B]) => F[B] = {
+      fb => g => f(_ => fb)(g)(c)
+    }
+    def h[X]: (X => F[A]) => (A => F[B]) => X => F[B] = {
+      f => g => compose(f, g)
+    }
+    revertComposing(123)(h)(ma)(f)
+
+    // or use currying
+    // revertCompose(123)((compose[Int, A, B] _).curried)(ma)(f)
+  }
+
+  def flatMap_byCompose_3[A, B](ma: F[A])(f: A => F[B]): F[B] = {
+    def revertComposing[X](c: X): F[A] => (A => F[B]) => F[B] = {
+      fb => g => compose[X, A, B](_ => fb, g)(c)
+    }
+    revertComposing(123)(ma)(f)
+  }
+
+  def flatMap_byCompose_4[A, B](ma: F[A])(f: A => F[B]): F[B] = {
+    compose((_: Int) => ma, f)(123)
+  }
+
+}
+
 object Exercise_11_10 {
   /*
     compose(f, unit) == f
@@ -244,4 +253,48 @@ object Exercise_11_11 {
       --> flatMap(List(y))(f) == f(y)
       --> f(y) == f(y)
  */
+}
+
+trait Exercise_11_13[F[_]] {
+  self: Monad[F] =>
+
+  def flatMap_byJoinAndMap[A, B](ma: F[A])(f: A => F[B]): F[B] = {
+    join(map(ma)(f))
+  }
+
+  def compose_byJoinAndMap[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = {
+    a =>
+//      val t = ((map(_)).compose[A](f))(a)(g)
+      join(map(f(a))(g))
+  }
+}
+
+object Exercise_11_14 {
+  /*
+    identity law
+      compose(f, unit) == f
+      --> {a => join(map(f(a))(unit))} == {a => f(a)}
+      --> join(map(x)(unit)) == x
+
+      compose(unit, f) == f
+      --> {a => join(map(unit(a))(f))} == {a => f(a)}
+      --> {a => join(unit(f(a)))} == {a => f(a)}
+      --> join(unit(x)) == x
+
+      flatMap(x)(unit) == x
+      --> join(map(x)(unit)) == x
+
+      flatMap(unit(y))(f) == f(y)
+      --> join(map(unit(y))(f)) == f(y)
+      --> join(unit(f(y)))) == f(y)
+      --> join(unit(x)) == x
+
+    (from answer)
+    associative law
+      x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
+      --> flatMap(flatMap(x)(f))(g) == flatMap(x)(a => flatMap(f(a))(g))
+      --> flatMap(flatMap(x)(z => z))(z => z) == flatMap(x)(a => flatMap(a)(z => z))
+      --> flatMap(join(x))(z => z) == flatMap(x)(join)
+      --> join(join(x)) == join(map(x)(join))
+   */
 }
