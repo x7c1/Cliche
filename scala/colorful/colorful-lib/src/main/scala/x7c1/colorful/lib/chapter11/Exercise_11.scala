@@ -5,7 +5,7 @@ import fpinscala.parallelism.Par.Par
 import x7c1.colorful.lib.chapter06.State
 import x7c1.colorful.lib.chapter08.Gen
 
-import scala.language.higherKinds
+import scala.language.{reflectiveCalls, higherKinds}
 
 trait Functor[F[_]] {
   def map[A,B](fa: F[A])(f: A => B): F[B]
@@ -88,6 +88,26 @@ object Monad {
     def flatMap[A,B](ma: Gen[A])(f: A => Gen[B]): Gen[B] =
       ma flatMap f
   }
+
+  def stateMonad[S] = new Monad[({type f[x] = State[S,x]})#f] {
+    def unit[A](a: => A): State[S,A] = State(s => (a, s))
+    def flatMap[A,B](st: State[S,A])(f: A => State[S,B]): State[S,B] = st flatMap f
+  }
+}
+
+/* 11.17 */
+object Id {
+  val idMonad = new Monad[Id] {
+    override def unit[X](a: => X): Id[X] = Id(a)
+    override def flatMap[X, Y](ma: Id[X])(f: X => Id[Y]): Id[Y] = ma flatMap f
+  }
+}
+
+case class Id[A](value: A){
+
+  def map[B](f: A => B): Id[B] = Id(f(value))
+
+  def flatMap[B](f: A => Id[B]): Id[B] = f(value)
 }
 
 object Exercise_11_1 {
@@ -223,6 +243,20 @@ trait Exercise_11_8[F[_]] {
 
 }
 
+/* 11.20 */
+
+case class Reader[R, A](run: R => A)
+
+object Reader {
+  def readerMonad[R] = new Monad[({type f[x] = Reader[R,x]})#f] {
+    override def unit[A](a: => A): Reader[R,A] = Reader(_ => a)
+    override def flatMap[A,B](st: Reader[R,A])(f: A => Reader[R,B]): Reader[R,B] =
+      Reader{ r =>
+        f(st.run(r)).run(r)
+      }
+  }
+}
+
 object Exercise_11_10 {
   /*
     compose(f, unit) == f
@@ -264,7 +298,6 @@ trait Exercise_11_13[F[_]] {
 
   def compose_byJoinAndMap[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = {
     a =>
-//      val t = ((map(_)).compose[A](f))(a)(g)
       join(map(f(a))(g))
   }
 }
@@ -297,4 +330,26 @@ object Exercise_11_14 {
       --> flatMap(join(x))(z => z) == flatMap(x)(join)
       --> join(join(x)) == join(map(x)(join))
    */
+}
+
+object Exercise_11_19 {
+  def getState[S]: State[S, S] = State.get[S]
+  def setState[S](s: => S): State[S, Unit] = State.set(s)
+}
+
+object Exercise_11_20 {
+  /*
+   copied answer & wiki
+   */
+
+  // join is to pass the same argument to a binary function
+  def join[R,A](x: Reader[R, Reader[R, A]]): Reader[R, A] =
+    Reader(r => x.run(r).run(r))
+
+  // map is function composition
+  def map[R,A,B](f: A => B): Reader[R, A] => Reader[R, B] =
+    r => Reader(f compose r.run)
+
+  // meaning of unit is to ignore the argument
+  def unit[R,A](a: A): Reader[R, A] = Reader(_ => a)
 }
