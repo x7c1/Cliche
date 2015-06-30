@@ -11,6 +11,7 @@ trait Applicative[F[_]]
     with Exercise_12_3[F]
     with Exercise_12_8[F]
     with Exercise_12_9[F]
+    with Exercise_12_12[F]
 
 trait Listing_12_1[F[_]] extends Functor[F]{
 
@@ -190,3 +191,13 @@ trait Exercise_12_11 [F[_]]{
     }
 }
 
+trait Exercise_12_12[F[_]] {
+  self: Applicative[F] =>
+
+  def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] = {
+    val init = unit(Map[K, V]())
+    ofa.foldRight(init){case ((k, fv), fmap) =>
+      map2(fv, fmap){(v, map) => map + (k -> v) }
+    }
+  }
+}
