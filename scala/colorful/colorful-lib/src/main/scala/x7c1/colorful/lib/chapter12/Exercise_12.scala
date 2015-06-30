@@ -154,10 +154,39 @@ trait Exercise_12_9[F[_]]{
         (fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] = {
 
         val g: (G[A], G[B]) => G[C] = (ga, gb) =>
-          G.map(G.product(ga, gb))(f.tupled)
+          G.map2(ga, gb)(f)
 
         self.map2(fa, fb)(g)
       }
       override def unit[A](a: => A): F[G[A]] = self unit G.unit(a)
     }
 }
+
+object Exercise_12_10 {
+  /*
+   :(
+     https://github.com/fpinscala/fpinscala/blob/6c70d60d4f63e7823070406030c8876c6990abbe/answerkey/applicative/10.hint.txt#L1
+     https://github.com/fpinscala/fpinscala/blob/6c70d60d4f63e7823070406030c8876c6990abbe/answerkey/applicative/10.answer.scala#L2-L3
+     https://github.com/runarorama/sannanir/blob/master/Applicative.v
+   */
+}
+
+trait Exercise_12_11 [F[_]]{
+  self: Monad[F] =>
+
+  def compose[G[_]](G: Monad[G]): Monad[({type f[x] = F[G[x]]})#f] =
+    new Monad[({type f[x] = F[G[x]]})#f] {
+      override def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+      override def flatMap[A, B](ma: F[G[A]])(f: A => F[G[B]]): F[G[B]] = {
+        /*
+        self.flatMap(ma){a => x(a)}
+          x requires `G[A] => F[G[B]]`, though `A => F[G[B]]` cannot be it.
+
+        self.map(ma){a => x(a)}
+          In this case, similarly, x requires unreachable `G[A] => G[B]`
+        */
+        ???
+      }
+    }
+}
+
