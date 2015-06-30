@@ -9,6 +9,7 @@ trait Applicative[F[_]]
     with Exercise_12_1[F]
     with Exercise_12_2[F]
     with Exercise_12_3[F]
+    with Exercise_12_8[F]
 
 trait Listing_12_1[F[_]] extends Functor[F]{
 
@@ -121,4 +122,24 @@ object Exercise_12_6 {
       }
 
     }
+}
+
+trait Exercise_12_8[F[_]]{
+  self: Applicative[F] =>
+
+  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = {
+    new Applicative[({type f[x] = (F[x], G[x])})#f] {
+
+      override def map2[A, B, C]
+        (fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) = {
+
+        val ((f1, g1), (f2, g2)) = (fa, fb)
+        val fc: F[C] = self.map2(f1: F[A], f2)(f)
+        val gc: G[C] = G.map2(g1, g2)(f)
+        (fc, gc)
+      }
+
+      override def unit[A](a: => A): (F[A], G[A]) = (self unit a, G unit a)
+    }
+  }
 }

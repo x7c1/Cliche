@@ -144,7 +144,6 @@ object Exercise_12_7 {
             }
           }
 
-
       product(map(fa)(f), map(fb)(g))
       --> map2(map(a)(f), map(b)(g)){(_, _)}
       --> flatMap(map(a)(f)){x => map(map(b)(g)){y => (x, y)}}
