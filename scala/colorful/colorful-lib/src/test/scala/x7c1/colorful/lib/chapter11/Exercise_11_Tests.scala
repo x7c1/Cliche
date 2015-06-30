@@ -257,7 +257,7 @@ class Exercise_11_19_Tests  extends FlatSpecLike with Matchers {
   }
 }
 
-class Exercise_11_20_Tests  extends FlatSpecLike with Matchers {
+class Exercise_11_20_Tests extends FlatSpecLike with Matchers {
 
   import Reader.readerMonad
   case class Context(x1: Int, x2: String)
