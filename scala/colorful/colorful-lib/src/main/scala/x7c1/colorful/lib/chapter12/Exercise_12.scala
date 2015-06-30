@@ -10,6 +10,7 @@ trait Applicative[F[_]]
     with Exercise_12_2[F]
     with Exercise_12_3[F]
     with Exercise_12_8[F]
+    with Exercise_12_9[F]
 
 trait Listing_12_1[F[_]] extends Functor[F]{
 
@@ -134,7 +135,7 @@ trait Exercise_12_8[F[_]]{
         (fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) = {
 
         val ((f1, g1), (f2, g2)) = (fa, fb)
-        val fc: F[C] = self.map2(f1: F[A], f2)(f)
+        val fc: F[C] = self.map2(f1, f2)(f)
         val gc: G[C] = G.map2(g1, g2)(f)
         (fc, gc)
       }
@@ -142,4 +143,21 @@ trait Exercise_12_8[F[_]]{
       override def unit[A](a: => A): (F[A], G[A]) = (self unit a, G unit a)
     }
   }
+}
+
+trait Exercise_12_9[F[_]]{
+  self: Applicative[F] =>
+
+  def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] =
+    new Applicative[({type f[x] = F[G[x]]})#f] {
+      override def map2[A, B, C]
+        (fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] = {
+
+        val g: (G[A], G[B]) => G[C] = (ga, gb) =>
+          G.map(G.product(ga, gb))(f.tupled)
+
+        self.map2(fa, fb)(g)
+      }
+      override def unit[A](a: => A): F[G[A]] = self unit G.unit(a)
+    }
 }
