@@ -1,8 +1,8 @@
 package x7c1.colorful.lib.chapter12
 
-import x7c1.colorful.lib.chapter11.Functor
+import x7c1.colorful.lib.chapter11.{Monad, Functor}
 
-import scala.language.higherKinds
+import scala.language.{reflectiveCalls, higherKinds}
 
 trait Applicative[F[_]]
   extends Listing_12_1[F]
@@ -12,9 +12,9 @@ trait Applicative[F[_]]
 
 trait Listing_12_1[F[_]] extends Functor[F]{
 
-  def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C]
-
   def unit[A](a: => A): F[A]
+
+  def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C]
 
   override def map[A,B](fa: F[A])(f: A => B): F[B] =
     map2(fa, unit(()))((a, _) => f(a))
@@ -85,4 +85,40 @@ object Exercise_12_4 {
     def map2[A,B,C](a: Stream[A], b: Stream[B])(f: (A,B) => C): Stream[C] =
       a zip b map f.tupled
   }
+}
+
+object Exercise_12_5 {
+  def eitherMonad[E] = new Monad[({type f[x] = Either[E, x]})#f] {
+    override def flatMap[A, B](ma: Either[E, A])
+      (f: A => Either[E, B]): Either[E, B] = ma.right.flatMap(f)
+
+    override def unit[A](a: => A): Either[E, A] = Right(a)
+  }
+}
+
+sealed trait Validation[+E, +A]
+
+case class Failure[E](
+  head: E,
+  tail: Vector[E] = Vector()) extends Validation[E, Nothing]
+
+case class Success[A](a: A) extends Validation[Nothing, A]
+
+object Exercise_12_6 {
+  def validationApplicative[E] =
+    new Applicative[({type f[x] = Validation[E, x]})#f] {
+
+      override def unit[A](a: => A): Validation[E, A] = Success(a)
+
+      override def map2[A, B, C]
+        (fa: Validation[E, A], fb: Validation[E, B])
+        (f: (A, B) => C): Validation[E, C] = (fa, fb) match {
+
+        case (Success(a), Success(b)) => Success(f(a, b))
+        case (Success(a), f: Failure[E]) => f
+        case (f: Failure[E], Success(b)) => f
+        case (Failure(h1, t1), Failure(h2, t2)) => Failure(h1, t1 ++ (h2 +: t2))
+      }
+
+    }
 }
