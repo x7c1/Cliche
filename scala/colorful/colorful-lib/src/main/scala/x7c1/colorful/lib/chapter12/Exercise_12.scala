@@ -368,9 +368,7 @@ trait Exercise_12_18[F[_]] {
 trait Exercise_12_19[F[_]] {
   self: Traverse[F] =>
 
-  def compose[G[_]]
-    (implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] =
-
+  def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] =
     new Traverse[({type f[x] = F[G[x]]})#f] {
       override def traverse[H[_] : Applicative, A, B]
         (fa: F[G[A]])(f: A => H[B]): H[F[G[B]]] = {
@@ -386,5 +384,29 @@ trait Exercise_12_19[F[_]] {
         // in short
         // self.traverse(fa)(G.traverse(_)(f))
       }
+    }
+}
+
+object Exercise_12_20 {
+
+  def composeM[F[_],G[_]](implicit
+    F: Monad[F], G: Monad[G], T: Traverse[G]): Monad[({type f[x] = F[G[x]]})#f] =
+
+    new Monad[({type f[x] = F[G[x]]})#f] {
+      override def flatMap[A, B](ma: F[G[A]])(f: A => F[G[B]]): F[G[B]] = {
+        F.flatMap(ma){ ga =>
+          val gfgb: G[F[G[B]]] = G.map(ga){a => f(a)}
+          val fggb: F[G[G[B]]] = T.sequence(gfgb)
+          val fgb: F[G[B]] = F.map(fggb){ggb => G.join(ggb)}
+          fgb
+        }
+        /*
+        in short
+        val fgb: F[G[B]] = F.flatMap(ma){ ga =>
+          F.map(T.traverse(ga)(f))(G.join)
+        }
+        */
+      }
+      override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
     }
 }
