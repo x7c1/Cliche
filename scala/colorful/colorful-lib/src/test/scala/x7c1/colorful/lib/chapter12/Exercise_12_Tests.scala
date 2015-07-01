@@ -1,7 +1,8 @@
 package x7c1.colorful.lib.chapter12
 
 import org.scalatest.{FlatSpecLike, Matchers}
-import x7c1.colorful.lib.chapter10.{Monoid, Exercise_10_1}
+import x7c1.colorful.lib.chapter10.{Exercise_10_1, Monoid}
+import x7c1.colorful.lib.chapter11.{Monad, Exercise_11_1}
 
 import scala.language.higherKinds
 
@@ -152,5 +153,29 @@ class Exercise_12_19_Tests extends FlatSpecLike with Matchers {
 
     val y3 = traverse.foldMap(x3)(_.toInt)(intAddition: Monoid[Int])
     y3 shouldBe 21
+  }
+}
+
+class Exercise_12_20_Tests extends FlatSpecLike with Matchers {
+  import Exercise_11_1.{listMonad, optionMonad}
+  import Exercise_12_13.{listTraverse, optionTraverse}
+  import Exercise_12_20.composeM
+
+  object ListOption {
+    type ListOption[X] = List[Option[X]]
+    implicit val listOptionM: Monad[ListOption] = composeM[List, Option]
+    implicit val listOptionT: Traverse[ListOption] = listTraverse compose optionTraverse
+  }
+  "composeM" can "combine two monads" in {
+    import ListOption._
+
+    val x = List(
+      List(Some("1"), None, Some("2")),
+      List(Some("3"))
+    )
+    composeM[List, ListOption].map(x)(_.toInt * 2) shouldBe List(
+      List(Some(2), None, Some(4)),
+      List(Some(6))
+    )
   }
 }

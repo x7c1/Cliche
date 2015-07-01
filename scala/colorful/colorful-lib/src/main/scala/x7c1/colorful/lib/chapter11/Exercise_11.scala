@@ -118,12 +118,12 @@ object Exercise_11_1 {
     override def flatMap[A, B](ma: Par[A])(f: (A) => Par[B]): Par[B] =
       Par.flatMap(ma)(f)
   }
-  val optionMonad = new Monad[Option] {
+  implicit val optionMonad = new Monad[Option] {
     override def unit[A](a: => A): Option[A] = Some(a)
     override def flatMap[A, B](ma: Option[A])(f: (A) => Option[B]): Option[B] =
       ma.flatMap(f)
   }
-  val listMonad = new Monad[List]{
+  implicit val listMonad = new Monad[List]{
     override def unit[A](a: => A): List[A] = List(a)
     override def flatMap[A, B](ma: List[A])(f: (A) => List[B]): List[B] =
       ma.flatMap(f)

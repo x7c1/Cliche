@@ -239,7 +239,7 @@ object Exercise_12_13 {
     override def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
   }
 
-  val optionTraverse = new Traverse[Option] {
+  implicit val optionTraverse = new Traverse[Option] {
     override def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa map f
 
     override def traverse[G[_] : Applicative, A, B]
