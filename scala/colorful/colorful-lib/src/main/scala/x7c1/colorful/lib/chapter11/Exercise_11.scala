@@ -19,7 +19,7 @@ trait Functor[F[_]] {
   }
 }
 
-trait Monad[F[_]]extends Functor[F]
+trait Monad[F[_]] extends Functor[F]
   with Exercise_11_8[F]
   with Exercise_11_13[F]
 {

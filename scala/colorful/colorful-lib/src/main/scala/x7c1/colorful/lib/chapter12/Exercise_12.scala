@@ -1,6 +1,6 @@
 package x7c1.colorful.lib.chapter12
 
-import x7c1.colorful.lib.chapter11.{Monad, Functor}
+import x7c1.colorful.lib.chapter11.Functor
 
 import scala.language.{reflectiveCalls, higherKinds}
 
@@ -34,9 +34,11 @@ trait Exercise_12_1[F[_]]{
     val init: F[List[A]] = unit(List[A]())
     lma.foldRight(init){ (fa, acc) => map2(fa, acc){_ :: _} }
   }
+
   def replicateM[A](n: Int, ma: F[A]): F[List[A]] = {
     sequence(List.fill(n)(ma))
   }
+
   def product[A, B](ma: F[A], mb: F[B]): F[(A, B)] = {
     map2(ma, mb)((_, _))
   }
@@ -80,6 +82,18 @@ trait Exercise_12_3[F[_]] {
     val f2: F[A => B => C => D => E] = unit(f.curried)
     apply(apply(apply(apply(f2)(fa))(fb))(fc))(fd)
   }
+}
+
+/* Listing 12-2 */
+
+trait Monad[F[_]] extends x7c1.colorful.lib.chapter11.Monad[F] with Applicative[F] {
+  override def sequence[A](lma: List[F[A]]): F[List[A]] = super.sequence(lma)
+
+  override def replicateM[A](n: Int, ma: F[A]): F[List[A]] = super.replicateM(n, ma)
+
+  override def product[A, B](ma: F[A], mb: F[B]): F[(A, B)] = super.product(ma, mb)
+
+  override def traverse[A, B](as: List[A])(f: (A) => F[B]): F[List[B]] = super.traverse(as)(f)
 }
 
 object Exercise_12_4 {
@@ -178,6 +192,7 @@ trait Exercise_12_11 [F[_]]{
   def compose[G[_]](G: Monad[G]): Monad[({type f[x] = F[G[x]]})#f] =
     new Monad[({type f[x] = F[G[x]]})#f] {
       override def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+
       override def flatMap[A, B](ma: F[G[A]])(f: A => F[G[B]]): F[G[B]] = {
         /*
         self.flatMap(ma){a => x(a)}
@@ -201,13 +216,13 @@ trait Exercise_12_12[F[_]] {
     }
   }
 }
-trait Traverse[F[_]] {
+
+trait Traverse[F[_]] extends Exercise_12_14[F] {
   def traverse[G[_]:Applicative,A,B](fa: F[A])(f: A => G[B]): G[F[B]] =
     sequence(map(fa)(f))
+
   def sequence[G[_]:Applicative,A](fga: F[G[A]]): G[F[A]] =
     traverse(fga)(ga => ga)
-
-  def map[A,B](fa: F[A])(f: A => B): F[B]
 }
 
 case class Tree[+A](head: A, tail: List[Tree[A]])
@@ -240,7 +255,6 @@ object Exercise_12_13 {
   }
 
   val treeTraverse = new Traverse[Tree] {
-
     override def traverse[G[_] : Applicative, A, B]
       (fa: Tree[A])(f: A => G[B]): G[Tree[B]] = {
 
@@ -255,5 +269,21 @@ object Exercise_12_13 {
     override def map[A, B](fa: Tree[A])(f: A => B): Tree[B] = {
       Tree(f(fa.head), fa.tail.map(map(_)(f)))
     }
+  }
+}
+
+trait Exercise_12_14[F[_]] {
+  self: Traverse[F] =>
+
+  def map[A, B](fa: F[A])(f: A => B): F[B] = {
+
+    type Foo[X] = X
+
+    implicit object x extends Monad[Foo] {
+      override def unit[A](a: => A): A = a
+
+      override def flatMap[A, B](ma: A)(f: A => B): B = f(ma)
+    }
+    traverse[Foo, A, B](fa)(f)
   }
 }
