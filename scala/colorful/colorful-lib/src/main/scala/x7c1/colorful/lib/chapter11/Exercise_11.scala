@@ -4,6 +4,7 @@ import fpinscala.parallelism.Par
 import fpinscala.parallelism.Par.Par
 import x7c1.colorful.lib.chapter06.State
 import x7c1.colorful.lib.chapter08.Gen
+import x7c1.colorful.lib.chapter12.Applicative
 
 import scala.language.{reflectiveCalls, higherKinds}
 
@@ -19,7 +20,8 @@ trait Functor[F[_]] {
   }
 }
 
-trait Monad[F[_]]extends Functor[F]
+trait Monad[F[_]] extends Functor[F]
+  with Applicative[F]// 12.16
   with Exercise_11_8[F]
   with Exercise_11_13[F]
 {
@@ -27,7 +29,7 @@ trait Monad[F[_]]extends Functor[F]
 
   def flatMap[A,B](ma: F[A])(f: A => F[B]): F[B]
 
-  def map[A,B](ma: F[A])(f: A => B): F[B] =
+  override def map[A,B](ma: F[A])(f: A => B): F[B] =
     flatMap(ma)(a => unit(f(a)))
 
   def map2[A,B,C](ma: F[A], mb: F[B])(f: (A, B) => C): F[C] =
@@ -35,23 +37,23 @@ trait Monad[F[_]]extends Functor[F]
 
   /* 11.3 */
 
-  def sequence[A](lma: List[F[A]]): F[List[A]] = {
+  override def sequence[A](lma: List[F[A]]): F[List[A]] = {
     val init: F[List[A]] = unit(List[A]())
     lma.foldRight(init){ (fa, acc) => map2(fa, acc){_ :: _} }
   }
 
-  def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] = {
+  override def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] = {
     val init: F[List[B]] = unit(List[B]())
     la.foldRight(init){ (a, acc) => map2(f(a), acc){_ :: _} }
   }
 
   /* 11.4 */
 
-  def replicateM[A](n: Int, ma: F[A]): F[List[A]] = {
+  override def replicateM[A](n: Int, ma: F[A]): F[List[A]] = {
     sequence(List.fill(n)(ma))
   }
 
-  def product[A, B](ma: F[A], mb: F[B]): F[(A, B)] =
+  override def product[A, B](ma: F[A], mb: F[B]): F[(A, B)] =
     map2(ma, mb)((_, _))
 
 
@@ -116,12 +118,12 @@ object Exercise_11_1 {
     override def flatMap[A, B](ma: Par[A])(f: (A) => Par[B]): Par[B] =
       Par.flatMap(ma)(f)
   }
-  val optionMonad = new Monad[Option] {
+  implicit val optionMonad = new Monad[Option] {
     override def unit[A](a: => A): Option[A] = Some(a)
     override def flatMap[A, B](ma: Option[A])(f: (A) => Option[B]): Option[B] =
       ma.flatMap(f)
   }
-  val listMonad = new Monad[List]{
+  implicit val listMonad = new Monad[List]{
     override def unit[A](a: => A): List[A] = List(a)
     override def flatMap[A, B](ma: List[A])(f: (A) => List[B]): List[B] =
       ma.flatMap(f)
