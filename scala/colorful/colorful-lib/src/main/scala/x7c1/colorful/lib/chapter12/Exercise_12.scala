@@ -135,7 +135,6 @@ trait Exercise_12_8[F[_]]{
 
   def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = {
     new Applicative[({type f[x] = (F[x], G[x])})#f] {
-
       override def map2[A, B, C]
         (fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) = {
 
@@ -215,6 +214,7 @@ trait Traverse[F[_]]
   with Listing_12_15[F]
   with Exercise_12_16[F]
   with Exercise_12_17[F]
+  with Exercise_12_18[F]
 {
   def traverse[G[_]:Applicative,A,B](fa: F[A])(f: A => G[B]): G[F[B]] =
     sequence(map(fa)(f))
@@ -343,5 +343,24 @@ trait Exercise_12_17[F[_]]{
 
   override def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = {
     mapAccum(as, z){(a, b) => () -> f(b, a) }._2
+  }
+}
+
+trait Exercise_12_18[F[_]] {
+  self: Traverse[F] =>
+
+  def fuse[G[_],H[_],A,B]
+    (fa: F[A])
+    (f: A => G[B], g: A => H[B])
+    (G: Applicative[G], H: Applicative[H]): (G[F[B]], H[F[B]]) = {
+
+    /*
+    val gfb: G[F[B]] = self.traverse(fa)(f)(G)
+    val hfb: H[F[B]] = self.traverse(fa)(g)(H)
+    */
+
+    type P[X] = (G[X], H[X])
+    val P: Applicative[P] = G product H
+    self.traverse[P, A, B](fa){a => f(a) -> g(a)}(P)
   }
 }
