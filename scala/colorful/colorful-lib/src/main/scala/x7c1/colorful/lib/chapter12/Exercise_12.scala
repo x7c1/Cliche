@@ -215,6 +215,7 @@ trait Traverse[F[_]]
   with Exercise_12_16[F]
   with Exercise_12_17[F]
   with Exercise_12_18[F]
+  with Exercise_12_19[F]
 {
   def traverse[G[_]:Applicative,A,B](fa: F[A])(f: A => G[B]): G[F[B]] =
     sequence(map(fa)(f))
@@ -323,9 +324,11 @@ trait FoldableImpl[F[_]] {
 
   override def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = ???
 
-  override def concatenate[A](as: F[A])(m: Monoid[A]): A = ???
+  override def concatenate[A](as: F[A])(m: Monoid[A]): A =
+    foldLeft[A, A](as)(m.zero)(m.op)
 
-  override def foldMap[A, B](as: F[A])(f: (A) => B)(mb: Monoid[B]): B = ???
+  override def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B =
+    foldLeft(as)(mb.zero){(a, b) => mb.op(a, f(b))}
 }
 
 trait Exercise_12_16[F[_]] {

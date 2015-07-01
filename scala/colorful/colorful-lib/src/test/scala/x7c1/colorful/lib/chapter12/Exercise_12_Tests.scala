@@ -1,6 +1,7 @@
 package x7c1.colorful.lib.chapter12
 
 import org.scalatest.{FlatSpecLike, Matchers}
+import x7c1.colorful.lib.chapter10.{Monoid, Exercise_10_1}
 
 import scala.language.higherKinds
 
@@ -127,5 +128,29 @@ class Exercise_12_17_Tests extends FlatSpecLike with Matchers {
   "foldLeft" should "be implemented by mapAccum" in {
     val x = List("a", "b", "c")
     listTraverse.foldLeft(x)("!"){_ + _} shouldBe "!abc"
+  }
+}
+
+class Exercise_12_19_Tests extends FlatSpecLike with Matchers {
+  import Exercise_10_1.intAddition
+  import Exercise_12_13.listTraverse
+
+  "compose" can "combine two traversable functor" in {
+    val x1 = Branch(
+      Branch(Leaf("1"), Leaf("2")),
+      Leaf("3")
+    )
+    val x2 = Branch(
+      Leaf("4"),
+      Branch(Leaf("5"), Leaf("6"))
+    )
+    val x3 = List(x1, x2)
+
+    val traverse = listTraverse compose treeTraverse
+    val y = traverse.foldLeft(x3)("!"){_ + _}
+    y shouldBe "!123456"
+
+    val y3 = traverse.foldMap(x3)(_.toInt)(intAddition: Monoid[Int])
+    y3 shouldBe 21
   }
 }
