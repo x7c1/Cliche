@@ -1,6 +1,8 @@
 package x7c1.colorful.lib.chapter12
 
-import x7c1.colorful.lib.chapter11.Functor
+import x7c1.colorful.lib.chapter06.State
+import x7c1.colorful.lib.chapter10.{Monoid, Foldable}
+import x7c1.colorful.lib.chapter11.{Monad, Exercise_11_2, Functor}
 
 import scala.language.{reflectiveCalls, higherKinds}
 
@@ -82,18 +84,6 @@ trait Exercise_12_3[F[_]] {
     val f2: F[A => B => C => D => E] = unit(f.curried)
     apply(apply(apply(apply(f2)(fa))(fb))(fc))(fd)
   }
-}
-
-/* Listing 12-2 */
-
-trait Monad[F[_]] extends x7c1.colorful.lib.chapter11.Monad[F] with Applicative[F] {
-  override def sequence[A](lma: List[F[A]]): F[List[A]] = super.sequence(lma)
-
-  override def replicateM[A](n: Int, ma: F[A]): F[List[A]] = super.replicateM(n, ma)
-
-  override def product[A, B](ma: F[A], mb: F[B]): F[(A, B)] = super.product(ma, mb)
-
-  override def traverse[A, B](as: List[A])(f: (A) => F[B]): F[List[B]] = super.traverse(as)(f)
 }
 
 object Exercise_12_4 {
@@ -217,7 +207,13 @@ trait Exercise_12_12[F[_]] {
   }
 }
 
-trait Traverse[F[_]] extends Exercise_12_14[F] {
+trait Traverse[F[_]]
+  extends Functor[F]
+  with Foldable[F] with FoldableImpl[F]
+  with Exercise_12_14[F]
+  with Listing_12_12[F]
+  with Listing_12_15[F]
+{
   def traverse[G[_]:Applicative,A,B](fa: F[A])(f: A => G[B]): G[F[B]] =
     sequence(map(fa)(f))
 
@@ -275,7 +271,7 @@ object Exercise_12_13 {
 trait Exercise_12_14[F[_]] {
   self: Traverse[F] =>
 
-  def map[A, B](fa: F[A])(f: A => B): F[B] = {
+  override def map[A, B](fa: F[A])(f: A => B): F[B] = {
 
     type Foo[X] = X
 
@@ -287,3 +283,42 @@ trait Exercise_12_14[F[_]] {
     traverse[Foo, A, B](fa)(f)
   }
 }
+
+trait Listing_12_12[F[_]] {
+  self: Traverse[F] =>
+
+  def traverseS[S,A,B](fa: F[A])(f: A => State[S, B]): State[S, F[B]] =
+    traverse[({type f[x] = State[S,x]})#f,A,B](fa)(f)(Monad.stateMonad)
+}
+
+trait Listing_12_15[F[_]] {
+  self: Traverse[F] =>
+
+  import State.{get, set}
+
+  def mapAccum[S,A,B](fa: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) =
+    traverseS(fa)((a: A) => for {
+      s1 <- get[S]
+      (b, s2) = f(a, s1)
+      _ <- set(s2)
+    } yield b).run(s)
+
+  override def toList[A](fa: F[A]): List[A] =
+    mapAccum(fa, List[A]())((a, s) => ((), a :: s))._2.reverse
+
+  def zipWithIndex[A](fa: F[A]): F[(A, Int)] =
+    mapAccum(fa, 0)((a, s) => ((a, s), s + 1))._1
+}
+
+trait FoldableImpl[F[_]] {
+  self: Foldable[F] =>
+
+  override def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B = ???
+
+  override def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = ???
+
+  override def concatenate[A](as: F[A])(m: Monoid[A]): A = ???
+
+  override def foldMap[A, B](as: F[A])(f: (A) => B)(mb: Monoid[B]): B = ???
+}
+
