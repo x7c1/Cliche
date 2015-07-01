@@ -214,6 +214,7 @@ trait Traverse[F[_]]
   with Listing_12_12[F]
   with Listing_12_15[F]
   with Exercise_12_16[F]
+  with Exercise_12_17[F]
 {
   def traverse[G[_]:Applicative,A,B](fa: F[A])(f: A => G[B]): G[F[B]] =
     sequence(map(fa)(f))
@@ -334,5 +335,13 @@ trait Exercise_12_16[F[_]] {
 
     // from answer
     mapAccum(fa, toList(fa).reverse){ (_, s) => (s.head, s.tail) }._1
+  }
+}
+
+trait Exercise_12_17[F[_]]{
+  self: Traverse[F] =>
+
+  override def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = {
+    mapAccum(as, z){(a, b) => () -> f(b, a) }._2
   }
 }

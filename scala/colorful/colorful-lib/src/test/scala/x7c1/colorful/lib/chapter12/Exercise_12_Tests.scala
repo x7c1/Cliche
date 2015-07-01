@@ -120,3 +120,12 @@ class Exercise_12_16_Tests extends FlatSpecLike with Matchers {
   }
 
 }
+
+class Exercise_12_17_Tests extends FlatSpecLike with Matchers {
+  import Exercise_12_13.listTraverse
+
+  "foldLeft" should "be implemented by mapAccum" in {
+    val x = List("a", "b", "c")
+    listTraverse.foldLeft(x)("!"){_ + _} shouldBe "!abc"
+  }
+}
