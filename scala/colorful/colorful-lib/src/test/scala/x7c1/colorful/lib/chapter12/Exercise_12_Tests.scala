@@ -2,6 +2,8 @@ package x7c1.colorful.lib.chapter12
 
 import org.scalatest.{FlatSpecLike, Matchers}
 
+import scala.language.higherKinds
+
 class Exercise_12_4_Tests extends FlatSpecLike with Matchers {
   import Exercise_12_4.streamApplicative
 
@@ -37,7 +39,84 @@ class Exercise_12_4_Tests extends FlatSpecLike with Matchers {
     )
   }
 }
+import x7c1.colorful.lib.chapter10.Exercise_10_13.{Branch, Leaf, Tree => Tree0}
 
-class Exercise_12_5_Tests extends FlatSpecLike with Matchers {
+object tree0Traverse extends Traverse[Tree0] {
+  override def traverse[G[_] : Applicative, A, B]
+  (fa: Tree0[A])(f: A => G[B]): G[Tree0[B]] = {
+
+    val g = implicitly[Applicative[G]]
+    fa match {
+      case Leaf(a) => g.map(f(a)){Leaf(_)}
+      case Branch(l, r) => g.map2(traverse(l)(f), traverse(r)(f)){ Branch(_, _) }
+    }
+  }
+}
+
+class Listing_12_14_Tests extends FlatSpecLike with Matchers {
+
+  import Exercise_12_13.listTraverse
+
+  "zipWithIndex" can "generate indexed list" in {
+    val x = List("a", "b", "c")
+    val y = listTraverse.zipWithIndex(x)
+    y shouldBe List(("a", 0), ("b", 1), ("c", 2))
+  }
+  "zipWithIndex" can "generate indexed tree" in {
+    val tree = Branch(
+      Branch(Leaf("a"), Leaf("b")),
+      Branch(Leaf("c"), Leaf("d"))
+    )
+    val y = tree0Traverse.zipWithIndex(tree)
+    y shouldBe Branch(
+      Branch(Leaf(("a",0)), Leaf(("b",1))),
+      Branch(Leaf(("c",2)), Leaf(("d",3)))
+    )
+  }
+}
+
+class Exercise_12_16_Tests extends FlatSpecLike with Matchers {
+
+  import Exercise_12_13.listTraverse
+
+  behavior of "reverse"
+  it can "generate a list in the reverse order " in {
+    val x = List("a", "b", "c")
+    val y = listTraverse.reverse(x)
+    y shouldBe List("c", "b", "a")
+  }
+  it can "generate a tree in the reverse order " in {
+    val tree = Branch(
+      Branch(Leaf("1"), Leaf("2")),
+      Branch(Leaf("3"), Leaf("4"))
+    )
+    tree0Traverse.reverse(tree) shouldBe Branch(
+      Branch(Leaf("4"), Leaf("3")),
+      Branch(Leaf("2"), Leaf("1"))
+    )
+  }
+
+  behavior of "reverse-law"
+  it should "hold on listTraverse" in {
+    import listTraverse.{reverse, toList}
+    val x = List("a", "b", "c")
+    val y = List("d", "e", "f")
+
+    toList(reverse(x)) ++ toList(reverse(y)) shouldBe
+      reverse(toList(y) ++ toList(x))
+  }
+  it should "hold on treeTraverse" in {
+    import tree0Traverse.{reverse, toList}
+    val x = Branch(
+      Branch(Leaf("1"), Leaf("2")),
+      Branch(Leaf("3"), Leaf("4"))
+    )
+    val y = Branch(
+      Branch(Leaf("a"), Leaf("b")),
+      Branch(Leaf("c"), Leaf("d"))
+    )
+    toList(reverse(x)) ++ toList(reverse(y)) shouldBe
+      listTraverse.reverse(toList(y) ++ toList(x))
+  }
 
 }

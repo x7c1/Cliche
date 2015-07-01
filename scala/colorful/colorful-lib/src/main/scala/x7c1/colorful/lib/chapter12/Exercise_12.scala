@@ -213,6 +213,7 @@ trait Traverse[F[_]]
   with Exercise_12_14[F]
   with Listing_12_12[F]
   with Listing_12_15[F]
+  with Exercise_12_16[F]
 {
   def traverse[G[_]:Applicative,A,B](fa: F[A])(f: A => G[B]): G[F[B]] =
     sequence(map(fa)(f))
@@ -322,3 +323,12 @@ trait FoldableImpl[F[_]] {
   override def foldMap[A, B](as: F[A])(f: (A) => B)(mb: Monoid[B]): B = ???
 }
 
+trait Exercise_12_16[F[_]] {
+  self: Traverse[F] =>
+
+  def reverse[A](fa: F[A]): F[A] = {
+
+    // from answer
+    mapAccum(fa, toList(fa).reverse){ (_, s) => (s.head, s.tail) }._1
+  }
+}
