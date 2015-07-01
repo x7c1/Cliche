@@ -297,12 +297,16 @@ trait Listing_12_15[F[_]] {
 
   import State.{get, set}
 
-  def mapAccum[S,A,B](fa: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) =
-    traverseS(fa)((a: A) => for {
-      s1 <- get[S]
-      (b, s2) = f(a, s1)
-      _ <- set(s2)
-    } yield b).run(s)
+  def mapAccum[S,A,B](fa: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) = {
+    val toNext: A => State[S, B] = a =>
+      for {
+        s1 <- get[S]
+        (b, s2) = f(a, s1)
+        _ <- set(s2)
+      } yield b
+
+    traverseS(fa)(toNext).run(s)
+  }
 
   override def toList[A](fa: F[A]): List[A] =
     mapAccum(fa, List[A]())((a, s) => ((), a :: s))._2.reverse
