@@ -41,7 +41,7 @@ class Exercise_12_4_Tests extends FlatSpecLike with Matchers {
 }
 import x7c1.colorful.lib.chapter10.Exercise_10_13.{Branch, Leaf, Tree => Tree0}
 
-object tree0Traverse extends Traverse[Tree0] {
+object treeTraverse extends Traverse[Tree0] {
   override def traverse[G[_] : Applicative, A, B]
   (fa: Tree0[A])(f: A => G[B]): G[Tree0[B]] = {
 
@@ -67,7 +67,7 @@ class Listing_12_14_Tests extends FlatSpecLike with Matchers {
       Branch(Leaf("a"), Leaf("b")),
       Branch(Leaf("c"), Leaf("d"))
     )
-    val y = tree0Traverse.zipWithIndex(tree)
+    val y = treeTraverse.zipWithIndex(tree)
     y shouldBe Branch(
       Branch(Leaf(("a",0)), Leaf(("b",1))),
       Branch(Leaf(("c",2)), Leaf(("d",3)))
@@ -90,7 +90,7 @@ class Exercise_12_16_Tests extends FlatSpecLike with Matchers {
       Branch(Leaf("1"), Leaf("2")),
       Branch(Leaf("3"), Leaf("4"))
     )
-    tree0Traverse.reverse(tree) shouldBe Branch(
+    treeTraverse.reverse(tree) shouldBe Branch(
       Branch(Leaf("4"), Leaf("3")),
       Branch(Leaf("2"), Leaf("1"))
     )
@@ -106,7 +106,7 @@ class Exercise_12_16_Tests extends FlatSpecLike with Matchers {
       reverse(toList(y) ++ toList(x))
   }
   it should "hold on treeTraverse" in {
-    import tree0Traverse.{reverse, toList}
+    import treeTraverse.{reverse, toList}
     val x = Branch(
       Branch(Leaf("1"), Leaf("2")),
       Branch(Leaf("3"), Leaf("4"))
