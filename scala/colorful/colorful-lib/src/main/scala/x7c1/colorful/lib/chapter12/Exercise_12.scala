@@ -364,3 +364,27 @@ trait Exercise_12_18[F[_]] {
     self.traverse[P, A, B](fa){a => f(a) -> g(a)}(P)
   }
 }
+
+trait Exercise_12_19[F[_]] {
+  self: Traverse[F] =>
+
+  def compose[G[_]]
+    (implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] =
+
+    new Traverse[({type f[x] = F[G[x]]})#f] {
+      override def traverse[H[_] : Applicative, A, B]
+        (fa: F[G[A]])(f: A => H[B]): H[F[G[B]]] = {
+
+        val H = implicitly[Applicative[H]]
+        val g: G[A] => H[G[B]] = { ga =>
+          val h: A => H[B] = f
+          G.traverse(ga)(h)(H)
+        }
+        val x: H[F[G[B]]] = self.traverse(fa)(g)(H)
+        x
+
+        // in short
+        // self.traverse(fa)(G.traverse(_)(f))
+      }
+    }
+}
