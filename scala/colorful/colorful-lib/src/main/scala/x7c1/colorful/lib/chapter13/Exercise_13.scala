@@ -3,6 +3,7 @@ package x7c1.colorful.lib.chapter13
 import fpinscala.parallelism.Par
 import fpinscala.parallelism.Par.Par
 import x7c1.colorful.lib.chapter11.Monad
+import x7c1.colorful.lib.chapter13.Listing_13_21.ConsoleReader
 
 import scala.annotation.tailrec
 import scala.language.{reflectiveCalls, higherKinds}
@@ -135,6 +136,9 @@ object Listing_13_15 {
     def toPar: Par[A]
 
     def toThunk: () => A
+
+    import Listing_13_21.ConsoleReader
+    def toReader: ConsoleReader[A]
   }
 
   case object ReadLine extends Console[Option[String]] {
@@ -146,11 +150,13 @@ object Listing_13_15 {
       try Some(readLine())
       catch { case e: Exception => None }
     }
+    override def toReader: ConsoleReader[Option[String]] = ConsoleReader(Some(_))
   }
 
   case class PrintLine(line: String) extends Console[Unit] {
     def toPar = Par.lazyUnit(println(line))
     def toThunk = () => println(line)
+    override def toReader: ConsoleReader[Unit] = ConsoleReader{_ => ()}
   }
 
   /* Listing 13-16 */
@@ -244,4 +250,31 @@ object Exercise_13_4 {
 
     runTrampoline(free)
   }
+}
+
+object Listing_13_21 {
+  import x7c1.colorful.lib.chapter13.Listing_13_15.{~>, Console, runFree}
+  import Console.ConsoleIO
+
+  case class ConsoleReader[A](run: String => A) {
+    def map[B](f: A => B): ConsoleReader[B] =
+      ConsoleReader(r => f(run(r)))
+
+    def flatMap[B](f: A => ConsoleReader[B]): ConsoleReader[B] =
+      ConsoleReader(r => f(run(r)).run(r))
+  }
+  object ConsoleReader {
+    implicit val monad = new Monad[ConsoleReader] {
+      def unit[A](a: => A) = ConsoleReader(_ => a)
+      def flatMap[A, B](ra: ConsoleReader[A])(f: A => ConsoleReader[B]) = ra flatMap f
+    }
+  }
+
+  /* Listing 13-22 */
+
+  val consoleToReader = new (Console ~> ConsoleReader) {
+    def apply[A](a: Console[A]) = a.toReader
+  }
+  def runConsoleReader[A](io: ConsoleIO[A]): ConsoleReader[A] =
+    runFree[Console,ConsoleReader,A](io)(consoleToReader)
 }
