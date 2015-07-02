@@ -82,6 +82,14 @@ case class Suspend[F[_],A](s: F[A]) extends Free[F,A]
 
 case class FlatMap[F[_],A,B](s: Free[F,A], f: A => Free[F,B]) extends Free[F,B]
 
+object Exercise_13_1 {
+  def freeMonad[F[_]]: Monad[({type f[a] = Free[F,a]})#f] =
+    new Monad[({type f[a] = Free[F, a]})#f] {
+      override def unit[A](a: => A): Free[F, A] = Return(a)
+      override def flatMap[A, B](ma: Free[F, A])
+        (f: A => Free[F, B]): Free[F, B] = FlatMap(ma, f)
+    }
+}
 
   }
 }
