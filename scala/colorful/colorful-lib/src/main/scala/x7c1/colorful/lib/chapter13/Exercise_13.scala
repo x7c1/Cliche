@@ -103,3 +103,22 @@ object Exercise_13_2 {
     }
   }
 }
+
+object Exercise_13_3 {
+
+  @tailrec
+  def step[F[_], A](free: Free[F,A]): Free[F,A] = free match {
+    case FlatMap(FlatMap(x,f), g) => step(x flatMap (a => f(a) flatMap g))
+    case FlatMap(Return(x), f) => step(f(x))
+    case _ => free
+  }
+
+  def run[F[_],A](fa: Free[F,A])(implicit F: Monad[F]): F[A] = step(fa) match {
+    case Return(a) => F.unit(a)
+    case Suspend(s) => s
+    case FlatMap(s, f) => s match {
+      case Suspend(s2) => F.flatMap(s2){a => run(f(a))}
+      case _ => sys.error("Impossible; `step` eliminates these cases")
+    }
+  }
+}
