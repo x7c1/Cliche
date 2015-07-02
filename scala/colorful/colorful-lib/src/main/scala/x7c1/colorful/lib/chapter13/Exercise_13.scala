@@ -91,5 +91,15 @@ object Exercise_13_1 {
     }
 }
 
+object Exercise_13_2 {
+  @tailrec
+  def runTrampoline[A](fa: Free[Function0,A]): A = fa match {
+    case Return(a) => a
+    case Suspend(s) => s()
+    case FlatMap(s1, f1) => s1 match {
+      case Return(a) => runTrampoline(f1(a))
+      case Suspend(s) => runTrampoline(f1(s()))
+      case FlatMap(y, g) => runTrampoline(y.flatMap{a => g(a) flatMap f1})
+    }
   }
 }
