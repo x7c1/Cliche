@@ -4,6 +4,7 @@ import fpinscala.parallelism.Par
 import fpinscala.parallelism.Par.Par
 import x7c1.colorful.lib.chapter11.Monad
 import x7c1.colorful.lib.chapter13.Listing_13_21.ConsoleReader
+import x7c1.colorful.lib.chapter13.Listing_13_23.ConsoleState
 
 import scala.annotation.tailrec
 import scala.language.{reflectiveCalls, higherKinds}
@@ -139,6 +140,9 @@ object Listing_13_15 {
 
     import Listing_13_21.ConsoleReader
     def toReader: ConsoleReader[A]
+
+    import Listing_13_23.ConsoleState
+    def toState: ConsoleState[A]
   }
 
   case object ReadLine extends Console[Option[String]] {
@@ -151,12 +155,22 @@ object Listing_13_15 {
       catch { case e: Exception => None }
     }
     override def toReader: ConsoleReader[Option[String]] = ConsoleReader(Some(_))
+
+    import Listing_13_23.Buffers
+    override def toState: ConsoleState[Option[String]] = ConsoleState{
+      case Buffers(List(), out) => (None, Buffers(List(), out))
+      case Buffers(a :: tail, out) => (Some(a), Buffers(tail, out))
+    }
   }
 
   case class PrintLine(line: String) extends Console[Unit] {
     def toPar = Par.lazyUnit(println(line))
     def toThunk = () => println(line)
     override def toReader: ConsoleReader[Unit] = ConsoleReader{_ => ()}
+
+    override def toState: ConsoleState[Unit] = ConsoleState{
+      buffers => () -> buffers.copy(out = buffers.out :+ line)
+    }
   }
 
   /* Listing 13-16 */
@@ -277,4 +291,30 @@ object Listing_13_21 {
   }
   def runConsoleReader[A](io: ConsoleIO[A]): ConsoleReader[A] =
     runFree[Console,ConsoleReader,A](io)(consoleToReader)
+}
+
+object Listing_13_23 {
+  import x7c1.colorful.lib.chapter13.Listing_13_15.{~>, Console, runFree}
+  import Console.ConsoleIO
+
+  case class Buffers(in: List[String], out: Vector[String])
+
+  case class ConsoleState[A](run: Buffers => (A, Buffers))
+
+  object ConsoleState {
+    implicit val monad = new Monad[ConsoleState] {
+      override def unit[A](a: => A): ConsoleState[A] = ConsoleState(b => a -> b)
+      override def flatMap[A, B]
+        (ma: ConsoleState[A])(f: A => ConsoleState[B]): ConsoleState[B] =
+        ConsoleState[B]{ buffers =>
+          val (a, updatedBuffers) = ma run buffers
+          f(a) run updatedBuffers
+        }
+    }
+  }
+  val consoleToState = new (Console ~> ConsoleState) {
+    def apply[A](a: Console[A]) = a.toState
+  }
+  def runConsoleState[A](io: ConsoleIO[A]): ConsoleState[A] =
+    runFree[Console,ConsoleState,A](io)(consoleToState)
 }
