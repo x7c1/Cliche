@@ -60,11 +60,27 @@ object Listing_13_9 extends Listing_13_8 {
   }
 }
 
+object Listing_13_11 {
 
+  sealed trait TailRec[A] {
+    def flatMap[B](f: A => TailRec[B]): TailRec[B] = FlatMap(this, f)
+    def map[B](f: A => B): TailRec[B] =  flatMap(f andThen (Return(_)))
+  }
+  case class Return[A](a: A) extends TailRec[A]
+  case class Suspend[A](resume: () => A) extends TailRec[A]
+  case class FlatMap[A,B](sub: TailRec[A], k: A => TailRec[B]) extends TailRec[B]
 }
 
+/* Listing 13-14 */
 
+sealed trait Free[F[_],A] {
+  def flatMap[B](f: A => Free[F, B]): Free[F, B] = FlatMap(this, f)
+}
+case class Return[F[_],A](a: A) extends Free[F,A]
 
+case class Suspend[F[_],A](s: F[A]) extends Free[F,A]
+
+case class FlatMap[F[_],A,B](s: Free[F,A], f: A => Free[F,B]) extends Free[F,B]
 
 
   }
