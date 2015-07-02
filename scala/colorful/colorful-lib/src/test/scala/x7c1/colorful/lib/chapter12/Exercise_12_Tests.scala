@@ -96,6 +96,14 @@ class Exercise_12_16_Tests extends FlatSpecLike with Matchers {
       Branch(Leaf("4"), Leaf("3")),
       Branch(Leaf("2"), Leaf("1"))
     )
+    val tree2 = Branch(
+      Branch(Leaf("1"), Branch(Leaf("2-1"), Leaf("2-2"))),
+      Leaf("3")
+    )
+    treeTraverse.reverse(tree2) shouldBe Branch(
+      Branch(Leaf("3"), Branch(Leaf("2-2"), Leaf("2-1"))),
+      Leaf("1")
+    )
   }
 
   behavior of "reverse-law"
