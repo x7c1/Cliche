@@ -52,6 +52,13 @@ trait Listing_13_8 {
   }
 }
 
+object Listing_13_9 extends Listing_13_8 {
+  def main(args: Array[String]) {
+    def printLine(s: String): IO[Unit] = Suspend(() => println(s))
+    val p = IO.forever(printLine("Still going..."))
+    IO run p
+  }
+}
 
 
 }
