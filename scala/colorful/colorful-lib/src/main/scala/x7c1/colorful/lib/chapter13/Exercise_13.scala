@@ -1,5 +1,8 @@
 package x7c1.colorful.lib.chapter13
 
+import fpinscala.parallelism.Par
+import fpinscala.parallelism.Par.Par
+import fpinscala.parallelism.Par.Par
 import x7c1.colorful.lib.chapter11.Monad
 
 import scala.annotation.tailrec
@@ -74,7 +77,10 @@ object Listing_13_11 {
 /* Listing 13-14 */
 
 sealed trait Free[F[_],A] {
+
   def flatMap[B](f: A => Free[F, B]): Free[F, B] = FlatMap(this, f)
+
+  def map[B](f: A => B): Free[F,B] = flatMap(f andThen (Return(_)))
 }
 case class Return[F[_],A](a: A) extends Free[F,A]
 
@@ -120,5 +126,96 @@ object Exercise_13_3 {
       case Suspend(s2) => F.flatMap(s2){a => run(f(a))}
       case _ => sys.error("Impossible; `step` eliminates these cases")
     }
+  }
+}
+
+object Listing_13_15 {
+  import scala.io.StdIn.readLine
+
+  sealed trait Console[A] {
+    def toPar: Par[A]
+
+    def toThunk: () => A
+  }
+
+  case object ReadLine extends Console[Option[String]] {
+    def toPar = Par.lazyUnit(run)
+
+    def toThunk = () => run
+
+    def run: Option[String] = {
+      try Some(readLine())
+      catch { case e: Exception => None }
+    }
+  }
+
+  case class PrintLine(line: String) extends Console[Unit] {
+    def toPar = Par.lazyUnit(println(line))
+    def toThunk = () => println(line)
+  }
+
+  /* Listing 13-16 */
+
+  object Console {
+    type ConsoleIO[A] = Free[Console, A]
+    def readLn: ConsoleIO[Option[String]] = Suspend(ReadLine)
+    def printLn(line: String): ConsoleIO[Unit] = Suspend(PrintLine(line))
+  }
+
+  /* Listing 13-17 */
+
+  trait Translate[F[_], G[_]] {
+    def apply[A](f: F[A]): G[A]
+  }
+  type ~>[F[_], G[_]] = Translate[F,G]
+
+  val consoleToFunction0 = new (Console ~> Function0) {
+    def apply[A](a: Console[A]) = a.toThunk
+  }
+  val consoleToPar = new (Console ~> Par) {
+    def apply[A](a: Console[A]) = a.toPar
+  }
+
+  /* Listing 13-18 */
+
+  import Exercise_13_3.step
+
+  def runFree[F[_],G[_],A](free: Free[F,A])(t: F ~> G)(implicit G: Monad[G]): G[A] =
+    step(free) match {
+      case Return(a) => G.unit(a)
+      case Suspend(r) => t(r)
+      case FlatMap(Suspend(r), f) => G.flatMap(t(r))(a => runFree(f(a))(t))
+      case _ => sys.error("Impossible; `step` eliminates these cases")
+    }
+
+  /* Listing 13-19 */
+
+  def runConsoleFunction0[A](a: Free[Console,A]): () => A =
+    runFree[Console,Function0,A](a)(consoleToFunction0)
+
+  def runConsolePar[A](a: Free[Console,A]): Par[A] =
+    runFree[Console,Par,A](a)(consoleToPar)
+
+  /* Listing 13-20 */
+
+  implicit val function0Monad = new Monad[Function0] {
+    def unit[A](a: => A) = () => a
+    def flatMap[A,B](a: Function0[A])(f: A => Function0[B]) = () => f(a())()
+  }
+  implicit val parMonad = new Monad[Par] {
+    def unit[A](a: => A) = Par.unit(a)
+    def flatMap[A,B](a: Par[A])(f: A => Par[B]) = Par.fork { Par.flatMap(a)(f) }
+  }
+
+  def main(args: Array[String]) {
+    import Console.{printLn, readLn}
+
+    val f1: Free[Console, Option[String]] = for {
+      _ <- printLn("I can only interact with the console.")
+      ln <- readLn
+    } yield ln
+
+    val y1 = runConsoleFunction0(f1)()
+    println(y1)
   }
 }
