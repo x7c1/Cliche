@@ -2,7 +2,6 @@ package x7c1.colorful.lib.chapter13
 
 import fpinscala.parallelism.Par
 import fpinscala.parallelism.Par.Par
-import fpinscala.parallelism.Par.Par
 import x7c1.colorful.lib.chapter11.Monad
 
 import scala.annotation.tailrec
@@ -217,5 +216,32 @@ object Listing_13_15 {
 
     val y1 = runConsoleFunction0(f1)()
     println(y1)
+  }
+}
+
+object Exercise_13_4 {
+  import x7c1.colorful.lib.chapter13.Listing_13_15.{~>, Console, runFree, consoleToFunction0}
+  import Exercise_13_1.freeMonad
+  import Exercise_13_2.runTrampoline
+
+  def translate[F[_],G[_],A](f: Free[F,A])(fg: F ~> G): Free[G,A] = {
+    type FreeG[X] = Free[G, X]
+    val M: Monad[FreeG] = freeMonad[G]
+
+    val p = new (F ~> FreeG){
+      override def apply[Y](f: F[Y]): Free[G, Y] = {
+        val gy: G[Y] = fg(f)
+        val fgy: Free[G,Y] = Suspend(gy)
+        fgy
+      }
+    }
+    runFree(f)(p)(M)
+  }
+
+  def runConsole[A](a: Free[Console,A]): A = {
+    def f: Console ~> Function0 = consoleToFunction0
+    val free: Free[Function0, A] = translate(a)(f)
+
+    runTrampoline(free)
   }
 }
