@@ -1,5 +1,8 @@
 package x7c1.colorful.lib.chapter14
 
+import scala.collection.mutable
+
+
 /* Listing 14-2 */
 sealed trait ST[S,A] { self =>
 
@@ -142,4 +145,36 @@ object Exercise_14_2 {
         sorted <- arr.freeze
       } yield sorted
     })
+}
+
+sealed abstract class STHashMap[S,K,V] {
+
+  import scala.collection.mutable
+
+  protected def value: mutable.HashMap[K, V]
+
+  def write(x: (K, V)): ST[S, Unit] = new ST[S, Unit] {
+    def run(s: S) = {
+      value += x
+      ((), s)
+    }
+  }
+  def read(k: K): ST[S, Option[V]] = ST(value.get(k))
+
+  def freeze: ST[S, Map[K, V]] = ST(value.toMap)
+}
+
+object STHashMap {
+  def apply[S,K,V](): ST[S, STHashMap[S,K,V]]=
+    ST apply new STHashMap[S,K,V] {
+      override protected def value: mutable.HashMap[K, V] = mutable.HashMap()
+    }
+
+  def fromMap[S,K,V](x: Map[K,V]): ST[S, STHashMap[S,K,V]]=
+    ST apply new STHashMap[S,K,V] {
+      override protected def value: mutable.HashMap[K, V] = {
+        mutable.HashMap(x.toSeq :_*)
+      }
+    }
+
 }
