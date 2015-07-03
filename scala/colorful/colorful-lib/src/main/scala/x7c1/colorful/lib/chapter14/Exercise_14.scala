@@ -76,7 +76,13 @@ sealed abstract class STArray[S,A](implicit manifest: Manifest[A]) {
       case ((i, a), b) => b.flatMap{ _ => write(i, a) }
     }
   }
-
+  /* Listing 14-8 */
+  def swap(i: Int, j: Int): ST[S,Unit] = for {
+    x <- read(i)
+    y <- read(j)
+    _ <- write(i, y)
+    _ <- write(j, x)
+  } yield ()
 }
 
 object STArray {
@@ -89,5 +95,51 @@ object STArray {
   def fromList[S,A:Manifest](xs: List[A]): ST[S, STArray[S,A]] =
     ST(new STArray[S,A] {
       lazy val value = xs.toArray
+    })
+}
+
+object Exercise_14_2 {
+  def partition[S](arr: STArray[S,Int], n: Int, r: Int, pivot: Int): ST[S,Int] = {
+    def init = ST[S, Unit](())
+
+    def loop(pivotVal: Int, j: STRef[S, Int])(st: ST[S, Unit], i: Int): ST[S, Unit] =
+      for {
+        _ <- st
+        iValue <- arr read i
+        _ <-
+          if (iValue >= pivotVal) init
+          else for {
+            jValue <- j.read
+            _ <- arr.swap(i, jValue)
+            _ <- j.write(jValue + 1)
+          } yield ()
+      } yield ()
+
+    for {
+      pivotVal <- arr.read(pivot)
+      _ <- arr.swap(pivot, r)
+      jRef <- STRef(n)
+      _ <- (n until r).foldLeft(init){ loop(pivotVal, jRef) }
+      j <- jRef.read
+      _ <- arr.swap(j, r)
+    } yield j
+  }
+  def qs[S](a: STArray[S,Int], n: Int, r: Int): ST[S,Unit] = {
+    if (n < r) for {
+      pi <- partition(a, n, r, n + (r - n) / 2)
+      _ <- qs(a, n, pi - 1)
+      _ <- qs(a, pi + 1, r) } yield ()
+    else
+      ST[S, Unit](())
+  }
+
+  def quicksort(xs: List[Int]): List[Int] =
+    if (xs.isEmpty) xs else ST.runST(new RunnableST[List[Int]] {
+      def apply[S] = for {
+        arr <- STArray.fromList(xs)
+        size <- arr.size
+        _ <- qs(arr, 0, size - 1)
+        sorted <- arr.freeze
+      } yield sorted
     })
 }

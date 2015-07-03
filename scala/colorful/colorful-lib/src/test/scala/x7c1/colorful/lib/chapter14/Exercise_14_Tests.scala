@@ -17,3 +17,12 @@ class Exercise_14_1_Tests extends FlatSpecLike with Matchers {
     ST.runST(runnable) shouldBe List(111, 222, 333)
   }
 }
+
+class Exercise_14_2_Tests extends FlatSpecLike with Matchers {
+
+  import Exercise_14_2.quicksort
+  "quicksort" can "sort list in order" in {
+    List().filter(_ => false)
+    quicksort(List(3, 1, 4, 5, 2)) shouldBe List(1, 2, 3, 4, 5)
+  }
+}
