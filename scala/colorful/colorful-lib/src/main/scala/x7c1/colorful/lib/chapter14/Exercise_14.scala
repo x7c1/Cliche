@@ -18,6 +18,23 @@ sealed trait ST[S,A] { self =>
   }
 }
 
+/* Listing 14-3 */
+sealed trait STRef[S,A] {
+  protected var cell: A
+  def read: ST[S,A] = ST(cell)
+  def write(a: A): ST[S,Unit] = new ST[S,Unit] {
+    def run(s: S) = {
+      cell = a
+      ((), s)
+    }
+  }
+}
+object STRef {
+  def apply[S,A](a: A): ST[S, STRef[S,A]] = ST(new STRef[S,A] {
+    var cell = a
+  })
+}
+
 /* Listing 14-4 */
 trait RunnableST[A] {
   def apply[S]: ST[S,A]
