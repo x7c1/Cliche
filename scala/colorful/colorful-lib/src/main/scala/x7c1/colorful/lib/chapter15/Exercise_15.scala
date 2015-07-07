@@ -1,5 +1,7 @@
 package x7c1.colorful.lib.chapter15
 
+import scala.language.higherKinds
+
 sealed trait Process[I,O]{
 
   /* Listing 15-4 */
@@ -33,6 +35,7 @@ object Process
   extends Exercise_15_1
   with Exercise_15_2
   with Exercise_15_3
+  with Exercise_15_4
 {
   /* Listing 15-5 */
 
@@ -44,6 +47,37 @@ object Process
   /* Listing 15-7 */
 
   def lift[I,O](f: I => O): Process[I,O] = liftOne(f).repeat
+
+  /* Listing 15-8 */
+
+  def filter[I](p: I => Boolean): Process[I,I] = Await[I,I] {
+    case Some(i) if p(i) => emit(i)
+    case _ => Halt()
+  }.repeat
+
+  /* Listing 15-9 */
+
+  def loop[S,I,O](z: S)(f: (I,S) => (O,S)): Process[I,O] = await(
+    (i: I) => f(i,z) match {
+      case (o,s2) => emit(o, loop(s2)(f))
+    }
+  )
+
+  def await[I,O](f: I => Process[I,O],
+    fallback: Process[I,O] = Halt[I,O]()): Process[I,O] = {
+
+    Await[I,O] {
+      case Some(i) => f(i)
+      case None => fallback
+    }
+  }
+
+  def emit[I,O](
+    head: O,
+    tail: Process[I,O] = Halt[I,O]()): Process[I,O] = {
+
+    Emit(head, tail)
+  }
 }
 
 case class Emit[I,O](
@@ -102,5 +136,16 @@ trait Exercise_15_3 {
       case _ => Halt()
     }
     go(0.0, 1)
+  }
+}
+
+trait Exercise_15_4 {
+  self: Process.type =>
+
+  def sum2: Process[Double,Double] = loop(0.0){ (d, acc) =>
+    (d + acc) -> (d + acc)
+  }
+  def count2[I]: Process[I,Int] = loop(0){ (i, acc) =>
+    (acc + 1, acc + 1)
   }
 }
