@@ -29,6 +29,36 @@ sealed trait Process[I,O]{
     go(this)
   }
 
+  /* Exercise 15.5 */
+
+  def |>[O2](p2: Process[O,O2]): Process[I,O2] = this match {
+    case Emit(head, tail) => p2 match {
+      case Emit(h, t) => Emit(h, this |> t)
+      case Await(f) => tail |> f(Option(head))
+      case Halt() => Halt()
+    }
+    case Await(recv) => p2 match {
+      case Emit(h, t) => Emit(h, this |> t)
+      case Await(f) => Await(i => recv(i) |> p2)
+      case Halt() => Halt()
+    }
+    case Halt() => Halt()
+  }
+
+  /*
+  from answer
+
+  def |>[O2](p2: Process[O,O2]): Process[I,O2] =
+    p2 match {
+      case Halt() => Halt()
+      case Emit(h,t) => Emit(h, this |> t)
+      case Await(f) => this match {
+        case Emit(h,t) => t |> f(Some(h))
+        case Halt() => Halt() |> f(None)
+        case Await(g) => Await((i: Option[I]) => g(i) |> p2)
+      }
+    }
+  */
 }
 
 object Process

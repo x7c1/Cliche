@@ -1,9 +1,9 @@
 package x7c1.colorful.lib.chapter15
 
-import org.scalatest.{Matchers, FlatSpecLike}
+import org.scalatest.{FlatSpecLike, Matchers}
 
 class Exercise_15_1_Tests extends FlatSpecLike with Matchers {
-  import Process.{take, drop, takeWhile, dropWhile}
+  import Process.{drop, dropWhile, take, takeWhile}
 
   "take" should "halt after encountering the given number of elements" in {
     take(3)(Stream(1,2,3,4,5)).toList shouldBe List(1,2,3)
@@ -43,3 +43,20 @@ class Exercise_15_4_Tests extends FlatSpecLike with Matchers {
   }
 }
 
+class Exercise_15_5_Tests extends FlatSpecLike with Matchers {
+  import Process.{filter, lift}
+
+  "|>" should "emit the number of elements" in {
+    val x = Stream(1, 2, 3, 4, 5, 6)
+
+    val p1 = filter[Int](_ % 2 == 0) |> lift(_ + 10)
+    p1(x) shouldBe Stream(12,14,16)
+
+    val p2 = p1 |> lift(_ * 10)
+    p2(x) shouldBe Stream(120,140,160)
+
+    val p3 = p2 |> filter(_ > 150)
+    p3(x) shouldBe Stream(160)
+
+  }
+}
