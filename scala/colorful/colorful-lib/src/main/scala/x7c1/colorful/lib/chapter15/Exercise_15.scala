@@ -13,13 +13,6 @@ sealed trait Process[I,O]{
     case Emit(h,t) => h #:: t(s)
   }
 
-  /* Listing 15-5 */
-
-  def liftOne[I,O](f: I => O): Process[I,O] = Await {
-    case Some(i) => Emit(f(i))
-    case None => Halt()
-  }
-
   /* Listing 15-6 */
 
   def repeat: Process[I,O] = {
@@ -32,6 +25,17 @@ sealed trait Process[I,O]{
       case Emit(h, t) => Emit(h, go(t))
     }
     go(this)
+  }
+
+}
+
+object Process {
+
+  /* Listing 15-5 */
+
+  def liftOne[I,O](f: I => O): Process[I,O] = Await {
+    case Some(i) => Emit(f(i))
+    case None => Halt()
   }
 
   /* Listing 15-7 */
