@@ -59,6 +59,23 @@ sealed trait Process[I,O]{
       }
     }
   */
+
+  /* Listing 15-10 */
+
+  def ++ (p: => Process[I,O]): Process[I,O] = this match {
+    case Halt() => p
+    case Emit(h, t) => Emit(h, t ++ p)
+    case Await(recv) => Await(recv andThen (_ ++ p))
+  }
+
+  /* Listing 15-11 */
+
+  def flatMap[O2](f: O => Process[I,O2]): Process[I,O2] = this match {
+    case Halt() => Halt()
+    case Emit(h, t) => f(h) ++ t.flatMap(f)
+    case Await(recv) => Await(recv andThen (_ flatMap f))
+  }
+
 }
 
 object Process
