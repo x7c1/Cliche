@@ -29,7 +29,7 @@ sealed trait Process[I,O]{
 
 }
 
-object Process {
+object Process extends Exercise_15_1 {
 
   /* Listing 15-5 */
 
@@ -51,3 +51,29 @@ case class Await[I,O](
   recv: Option[I] => Process[I,O]) extends Process[I,O]
 
 case class Halt[I,O]() extends Process[I,O]
+
+trait Exercise_15_1 {
+  self: Process.type =>
+
+  def take[I](n: Int): Process[I,I] = Await {
+    case Some(i) if n > 0 => Emit(i, take(n - 1))
+    case _ => Halt()
+  }
+
+  def drop[I](n: Int): Process[I,I] = Await {
+    case Some(i) if n > 0 => drop(n - 1)
+    case Some(i) => Emit(i, lift[I,I](i => i))
+    case _ => Halt()
+  }
+
+  def takeWhile[I](f: I => Boolean): Process[I,I] = Await {
+    case Some(i) if f(i) => Emit(i, takeWhile(f))
+    case _ => Halt()
+  }
+
+  def dropWhile[I](f: I => Boolean): Process[I,I] = Await {
+    case Some(i) if f(i) => dropWhile(f)
+    case Some(i) => Emit(i, lift[I,I](i => i))
+    case _ => Halt()
+  }
+}
