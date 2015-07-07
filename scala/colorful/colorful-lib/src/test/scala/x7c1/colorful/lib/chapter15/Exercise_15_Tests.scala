@@ -26,3 +26,11 @@ class Exercise_15_2_Tests extends FlatSpecLike with Matchers {
     count(Stream("a","b","c")) shouldBe Stream(1,2,3)
   }
 }
+
+class Exercise_15_3_Tests extends FlatSpecLike with Matchers {
+  import Process.mean
+
+  "mean" should "emit the number of elements" in {
+    mean(Stream(1.5,2.5,3.5)) shouldBe Stream(1.5,2.0,2.5)
+  }
+}

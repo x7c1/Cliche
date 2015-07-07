@@ -32,6 +32,7 @@ sealed trait Process[I,O]{
 object Process
   extends Exercise_15_1
   with Exercise_15_2
+  with Exercise_15_3
 {
   /* Listing 15-5 */
 
@@ -84,10 +85,22 @@ trait Exercise_15_2 {
   self: Process.type =>
 
   def count[I]: Process[I,Int] = {
-    def go[I2,O2](n: Int): Process[I2, Int] = Await {
+    def go(n: Int): Process[I, Int] = Await {
       case Some(_) => Emit(n, go(n + 1))
       case _ => Halt()
     }
     go(1)
+  }
+}
+
+trait Exercise_15_3 {
+  self: Process.type =>
+
+  def mean: Process[Double,Double] = {
+    def go(sum: Double, n: Int): Process[Double, Double] = Await {
+      case Some(d) => Emit((sum + d) / n, go(sum + d, n + 1))
+      case _ => Halt()
+    }
+    go(0.0, 1)
   }
 }
