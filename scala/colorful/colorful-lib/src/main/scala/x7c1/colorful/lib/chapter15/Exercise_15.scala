@@ -29,8 +29,10 @@ sealed trait Process[I,O]{
 
 }
 
-object Process extends Exercise_15_1 {
-
+object Process
+  extends Exercise_15_1
+  with Exercise_15_2
+{
   /* Listing 15-5 */
 
   def liftOne[I,O](f: I => O): Process[I,O] = Await {
@@ -75,5 +77,17 @@ trait Exercise_15_1 {
     case Some(i) if f(i) => dropWhile(f)
     case Some(i) => Emit(i, lift[I,I](i => i))
     case _ => Halt()
+  }
+}
+
+trait Exercise_15_2 {
+  self: Process.type =>
+
+  def count[I]: Process[I,Int] = {
+    def go[I2,O2](n: Int): Process[I2, Int] = Await {
+      case Some(_) => Emit(n, go(n + 1))
+      case _ => Halt()
+    }
+    go(1)
   }
 }

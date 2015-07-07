@@ -2,7 +2,7 @@ package x7c1.colorful.lib.chapter15
 
 import org.scalatest.{Matchers, FlatSpecLike}
 
-class Exercise_15_Tests extends FlatSpecLike with Matchers {
+class Exercise_15_1_Tests extends FlatSpecLike with Matchers {
   import Process.{take, drop, takeWhile, dropWhile}
 
   "take" should "halt after encountering the given number of elements" in {
@@ -16,5 +16,13 @@ class Exercise_15_Tests extends FlatSpecLike with Matchers {
   }
   "dropWhile" should "drop elements while the given predicate remains true" in {
     dropWhile((_: Int) < 3)(Stream(1,2,3,4,5)).toList shouldBe List(3,4,5)
+  }
+}
+
+class Exercise_15_2_Tests extends FlatSpecLike with Matchers {
+  import Process.count
+
+  "count" should "emit the number of elements" in {
+    count(Stream("a","b","c")) shouldBe Stream(1,2,3)
   }
 }
