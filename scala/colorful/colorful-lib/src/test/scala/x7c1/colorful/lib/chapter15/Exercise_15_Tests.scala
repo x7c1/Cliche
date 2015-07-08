@@ -46,7 +46,7 @@ class Exercise_15_4_Tests extends FlatSpecLike with Matchers {
 class Exercise_15_5_Tests extends FlatSpecLike with Matchers {
   import Process.{filter, lift}
 
-  "|>" should "emit the number of elements" in {
+  "|>" should "fuse the transformations done by left and right" in {
     val x = Stream(1, 2, 3, 4, 5, 6)
 
     val p1 = filter[Int](_ % 2 == 0) |> lift(_ + 10)
@@ -64,7 +64,7 @@ class Exercise_15_5_Tests extends FlatSpecLike with Matchers {
 class Exercise_15_6_Tests extends FlatSpecLike with Matchers {
   import Process.drop
 
-  "zipWithIndex" should "" in {
+  "zipWithIndex" should "emit a running count of values" in {
     val x = Stream("a","b","c")
 
     val s1 = drop(0)(x)
