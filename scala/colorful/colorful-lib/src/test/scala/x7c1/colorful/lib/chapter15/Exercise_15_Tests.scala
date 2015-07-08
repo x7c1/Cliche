@@ -78,3 +78,11 @@ class Exercise_15_6_Tests extends FlatSpecLike with Matchers {
     )
   }
 }
+
+class Exercise_15_7_Tests extends FlatSpecLike with Matchers {
+  import Process.mean2
+
+  "mean2" should "behave same as mean" in {
+    mean2(Stream(1.5,2.5,3.5)) shouldBe Stream(1.5,2.0,2.5)
+  }
+}

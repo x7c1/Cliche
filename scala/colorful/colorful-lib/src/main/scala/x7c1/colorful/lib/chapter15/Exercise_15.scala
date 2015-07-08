@@ -86,6 +86,8 @@ sealed trait Process[I,O]{
     }
     go(0, this)
   }
+
+  def map[O2](f: O => O2): Process[I,O2] = this |> Process.lift(f)
 }
 
 object Process
@@ -93,6 +95,7 @@ object Process
   with Exercise_15_2
   with Exercise_15_3
   with Exercise_15_4
+  with Exercise_15_7
 {
   /* Listing 15-5 */
 
@@ -205,4 +208,33 @@ trait Exercise_15_4 {
   def count2[I]: Process[I,Int] = loop(0){ (i, acc) =>
     (acc + 1, acc + 1)
   }
+}
+
+trait Exercise_15_7 {
+  self: Process.type =>
+
+  def mean2: Process[Double,Double] = {
+    val x = zip(count2[Double], sum2)
+    x map { case (i, d) => d / i }
+  }
+
+  /* copied from answer */
+
+  def zip[A,B,C](p1: Process[A,B], p2: Process[A,C]): Process[A,(B,C)] =
+    (p1, p2) match {
+      case (Halt(), _) => Halt()
+      case (_, Halt()) => Halt()
+      case (Emit(b, t1), Emit(c, t2)) => Emit((b,c), zip(t1, t2))
+      case (Await(recv1), _) =>
+        Await((oa: Option[A]) => zip(recv1(oa), feed(oa)(p2)))
+      case (_, Await(recv2)) =>
+        Await((oa: Option[A]) => zip(feed(oa)(p1), recv2(oa)))
+    }
+
+  def feed[A,B](oa: Option[A])(p: Process[A,B]): Process[A,B] =
+    p match {
+      case Halt() => p
+      case Emit(h,t) => Emit(h, feed(oa)(t))
+      case Await(recv) => recv(oa)
+    }
 }
