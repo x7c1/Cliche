@@ -60,3 +60,21 @@ class Exercise_15_5_Tests extends FlatSpecLike with Matchers {
 
   }
 }
+
+class Exercise_15_6_Tests extends FlatSpecLike with Matchers {
+  import Process.drop
+
+  "zipWithIndex" should "" in {
+    val x = Stream("a","b","c")
+
+    val s1 = drop(0)(x)
+    s1.toList shouldBe List("a","b","c")
+
+    val s2 = drop(0).zipWithIndex(x)
+    s2.toList shouldBe List(
+      ("a",0),
+      ("b",1),
+      ("c",2)
+    )
+  }
+}

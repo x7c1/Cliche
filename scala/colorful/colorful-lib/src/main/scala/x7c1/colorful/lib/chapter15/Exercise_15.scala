@@ -76,6 +76,16 @@ sealed trait Process[I,O]{
     case Await(recv) => Await(recv andThen (_ flatMap f))
   }
 
+  /* Exercise 15.6 */
+
+  def zipWithIndex: Process[I, (O,Int)] = {
+    def go(n: Int, p: Process[I,O]): Process[I,(O,Int)] = p match {
+      case Halt() => Halt()
+      case Emit(h, t) => Emit((h, n), go(n + 1, t))
+      case Await(recv) => Await { x => go(n, recv(x)) }
+    }
+    go(0, this)
+  }
 }
 
 object Process
