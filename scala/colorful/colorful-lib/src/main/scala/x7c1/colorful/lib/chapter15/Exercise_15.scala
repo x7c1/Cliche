@@ -42,7 +42,11 @@ sealed trait Process[I,O]{
       case Await(f) => Await(i => recv(i) |> p2)
       case Halt() => Halt()
     }
-    case Halt() => Halt()
+    case Halt() => p2 match {
+      case Emit(h, t) => Emit(h, this |> t)
+      case Await(f) => Halt() |> f(None)
+      case Halt() => Halt()
+    }
   }
 
   /*
