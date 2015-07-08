@@ -77,6 +77,7 @@ object Process
   with Exercise_15_3
   with Exercise_15_4
   with Exercise_15_7
+  with Exercise_15_8
 {
   /* Listing 15-5 */
 
@@ -217,5 +218,15 @@ trait Exercise_15_7 {
       case Halt() => p
       case Emit(h,t) => Emit(h, feed(oa)(t))
       case Await(recv) => recv(oa)
+    }
+}
+
+trait Exercise_15_8 {
+  self: Process.type =>
+
+  def exists[I](f: I => Boolean): Process[I,Boolean] =
+    filter(f) |> Await {
+      case Some(i) => emit(true)
+      case None => emit(false)
     }
 }

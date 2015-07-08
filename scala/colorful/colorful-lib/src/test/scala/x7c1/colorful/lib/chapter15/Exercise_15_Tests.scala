@@ -86,3 +86,12 @@ class Exercise_15_7_Tests extends FlatSpecLike with Matchers {
     mean2(Stream(1.5,2.5,3.5)) shouldBe Stream(1.5,2.0,2.5)
   }
 }
+
+class Exercise_15_8_Tests extends FlatSpecLike with Matchers {
+  import Process.exists
+
+  "exists" should "" in {
+    exists[Int](_ % 2 == 0)(Stream(1,3,5,6,7)) shouldBe Stream(true)
+    exists[Int](_ % 2 == 0)(Stream(1,3,5,7)) shouldBe Stream(false)
+  }
+}
