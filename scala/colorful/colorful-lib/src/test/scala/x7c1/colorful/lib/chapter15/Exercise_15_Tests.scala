@@ -30,7 +30,7 @@ class Exercise_15_2_Tests extends FlatSpecLike with Matchers {
 class Exercise_15_3_Tests extends FlatSpecLike with Matchers {
   import Process.mean
 
-  "mean" should "emit the number of elements" in {
+  "mean" should "emit a running average of the values" in {
     mean(Stream(1.5,2.5,3.5)) shouldBe Stream(1.5,2.0,2.5)
   }
 }
