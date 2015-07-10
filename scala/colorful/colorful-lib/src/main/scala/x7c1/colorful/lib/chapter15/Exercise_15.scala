@@ -230,3 +230,37 @@ trait Exercise_15_8 {
       case None => emit(false)
     }
 }
+
+object Exercise_15_9 {
+
+  /*
+  draft:
+
+  val process =
+    filter(line -> ! line.startsWith("#")) |>
+    filter(line -> ! line.isEmpty) |>
+    lift(_.toDouble) |>
+    lift(toCelsius)
+
+  val free = for {
+    f <- openFile("fahrenheit.txt")
+    line <- convert(f).by(process)
+    _ <- write(line).to("celsius.txt")
+  } yield ()
+
+  val before = MockFile(
+    path = "foo/bar.txt",
+    body = """
+      #comment1
+      140.0
+      150.0
+
+      #comment2
+      158.0
+      160.0
+    """
+  )
+  val (_, after) = runFileProcessByMock(free).run(before)
+  after.body shouldBe ...
+   */
+}
