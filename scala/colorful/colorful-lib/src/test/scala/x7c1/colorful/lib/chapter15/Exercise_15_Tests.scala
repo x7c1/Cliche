@@ -95,3 +95,26 @@ class Exercise_15_8_Tests extends FlatSpecLike with Matchers {
     exists[Int](_ % 2 == 0)(Stream(1,3,5,7)) shouldBe Stream(false)
   }
 }
+
+class Exercise_15_9_Tests extends FlatSpecLike with Matchers {
+  import Exercise_15_9.runToCelsius
+
+  "runToCelsius" should "" in {
+    val before = MockBuffer(Seq("140.0", "#comment", "149.0"))
+    val after = runToCelsius(before)
+
+    after.logs shouldBe Vector(
+      "open to read fahrenheit.txt",
+      "open to write celsius.txt",
+      "read lines",
+      "write line 60.0",
+      "write line 65.0",
+      "close file MockHandlerToWrite(celsius.txt)",
+      "close file MockHandlerToRead(fahrenheit.txt)"
+    )
+    after.closed shouldBe Vector(
+      MockHandlerToWrite("celsius.txt"),
+      MockHandlerToRead("fahrenheit.txt")
+    )
+  }
+}

@@ -100,7 +100,7 @@ object Exercise_15_9 {
 
   def toCelsius(fahrenheit: Double): Double = (5.0 / 9.0) * (fahrenheit - 32.0)
 
-  def main(args: Array[String]): Unit = {
+  def runToCelsius(buffer: MockBuffer): MockBuffer = {
     import Process.{filter, lift}
 
     val process =
@@ -111,7 +111,13 @@ object Exercise_15_9 {
       lift(_.toString)
 
     val state = MockInterpreter run onFree(process)
-    state run MockBuffer()
+    val (_, after) = state run buffer
+    after
+  }
+  def main(args: Array[String]): Unit = {
+    val before = MockBuffer(Seq("140.0", "#comment", "149.0"))
+    val after = runToCelsius(before)
+    println(after)
   }
 }
 
@@ -144,7 +150,15 @@ object ActualInterpreter {
   def toThunk[A](f: FileOperation[A]): () => A = ???
 }
 
-case class MockBuffer()
+case class MockBuffer(
+  lines: Seq[String],
+  logs: Vector[String] = Vector(),
+  closed: Vector[Handle] = Vector()){
+
+  def log(message: String) = copy(logs = logs :+ message)
+
+  def close(handle: Handle) = copy(closed = closed :+ handle)
+}
 
 case class MockState[A](run: MockBuffer => (A, MockBuffer))
 
@@ -161,37 +175,28 @@ object MockState {
   }
 }
 
+case class MockHandlerToWrite(file: String) extends HandleW
+
+case class MockHandlerToRead(file: String) extends HandleR
+
 object MockInterpreter {
-
-  case class MockHandlerToWrite(file: String) extends HandleW
-
-  case class MockHandlerToRead(file: String) extends HandleR
 
   def toMockState = new (FileOperation ~> MockState){
     override def apply[A](f: FileOperation[A]): MockState[A] = f match {
       case OpenToRead(file) => MockState { buffer =>
-        println(s"open to read $file")
-        MockHandlerToRead(file) -> buffer
+        MockHandlerToRead(file) -> buffer.log(s"open to read $file")
       }
       case OpenToWrite(file) => MockState { buffer =>
-        println(s"open to write $file")
-        MockHandlerToWrite(file) -> buffer
+        MockHandlerToWrite(file) -> buffer.log(s"open to write $file")
       }
       case ReadLines(handler) => MockState { buffer =>
-        val lines = Seq(
-          "140.0",
-          "150.0"
-        )
-        println(s"read lines")
-        lines.toIterator -> buffer
+        buffer.lines.toIterator -> buffer.log("read lines")
       }
       case WriteLine(handler, line) => MockState { buffer =>
-        println(s"write line $line")
-        () -> buffer
+        () -> buffer.log(s"write line $line")
       }
       case CloseFile(handler) => MockState { buffer =>
-        println(s"close file $handler")
-        () -> buffer
+        () -> buffer.log(s"close file $handler").close(handler)
       }
     }
   }
