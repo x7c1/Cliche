@@ -97,11 +97,11 @@ class Exercise_15_8_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_9_Tests extends FlatSpecLike with Matchers {
-  import Exercise_15_9.{runToCelsius, runToCelsius2}
+  import Exercise_15_9.{runMockViaIterator, runMock}
 
   "runToCelsius" can "read lines and write them in order" in {
     val before = MockBuffer(Seq("140.0", "#comment", "149.0"))
-    val after = runToCelsius(before)
+    val after = runMockViaIterator(before)
 
     after.logs shouldBe Vector(
       "open to read fahrenheit.txt",
@@ -119,7 +119,7 @@ class Exercise_15_9_Tests extends FlatSpecLike with Matchers {
   }
   "runToCelsius2" can "read and write a line to the end" in {
     val before = MockBuffer(Seq("140.0", "#comment", "149.0"))
-    val after = runToCelsius2(before)
+    val after = runMock(before)
 
     after.logs shouldBe Vector(
       "open to read fahrenheit.txt",
