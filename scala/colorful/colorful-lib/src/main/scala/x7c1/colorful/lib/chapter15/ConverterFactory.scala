@@ -32,8 +32,6 @@ class ConverterFactory(
 
   // read and write a line in order to the end
   def create: Converter = {
-
-    // is there a solution to satisfy @tailrec?
     def loop(p: Process[String, String], r: HandleR, w: HandleW): Converter =
       p match {
         case Emit(head, tail) =>
@@ -55,8 +53,6 @@ class ConverterFactory(
 
   // read lines as iterator, then write these lines
   def createViaIterator: Converter = {
-
-    // is there a solution to satisfy @tailrec?
     def write(lines: Iterator[String], p: Process[String, String], handle: HandleW): Converter =
       p match {
         case Emit(head, tail) =>

@@ -75,3 +75,18 @@ object MockRunner {
     after
   }
 }
+
+/*
+object ActualInterpreter {
+  import x7c1.colorful.lib.chapter13.Exercise_13_2.runTrampoline
+  import x7c1.colorful.lib.chapter13.Exercise_13_4.translate
+
+  def run[A](free: Free[FileOperation, A]): A = {
+    def converter = new (FileOperation ~> Function0){
+      override def apply[X](f: FileOperation[X]): () => X = ???
+    }
+    val f: Free[Function0, A] = translate(free)(converter)
+    runTrampoline(f)
+  }
+}
+*/

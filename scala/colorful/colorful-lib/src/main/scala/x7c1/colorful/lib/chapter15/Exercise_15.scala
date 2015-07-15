@@ -230,3 +230,21 @@ trait Exercise_15_8 {
       case None => emit(false)
     }
 }
+
+object Exercise_15_9 {
+  val factory = ConverterFactory(
+    fahrenheitFile = "fahrenheit.txt",
+    celsiusFile = "celsius.txt"
+  )
+  def runMockViaIterator: MockBuffer => MockBuffer = {
+    MockRunner by factory.createViaIterator
+  }
+  def runMock: MockBuffer => MockBuffer = {
+    MockRunner by factory.create
+  }
+  def main(args: Array[String]): Unit = {
+    val before = MockBuffer(Seq("140.0", "#comment", "149.0"))
+    val after = runMockViaIterator(before)
+    println(after)
+  }
+}
