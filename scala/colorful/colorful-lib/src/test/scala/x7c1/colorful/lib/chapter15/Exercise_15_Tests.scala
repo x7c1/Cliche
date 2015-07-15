@@ -97,9 +97,9 @@ class Exercise_15_8_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_9_Tests extends FlatSpecLike with Matchers {
-  import Exercise_15_9.runToCelsius
+  import Exercise_15_9.{runToCelsius, runToCelsius2}
 
-  "runToCelsius" should "" in {
+  "runToCelsius" can "read lines and write them in order" in {
     val before = MockBuffer(Seq("140.0", "#comment", "149.0"))
     val after = runToCelsius(before)
 
@@ -109,8 +109,29 @@ class Exercise_15_9_Tests extends FlatSpecLike with Matchers {
       "read lines",
       "write line 60.0",
       "write line 65.0",
-      "close file MockHandlerToWrite(celsius.txt)",
-      "close file MockHandlerToRead(fahrenheit.txt)"
+      "close file by MockHandlerToWrite(celsius.txt)",
+      "close file by MockHandlerToRead(fahrenheit.txt)"
+    )
+    after.closed shouldBe Vector(
+      MockHandlerToWrite("celsius.txt"),
+      MockHandlerToRead("fahrenheit.txt")
+    )
+  }
+  "runToCelsius2" can "read and write a line to the end" in {
+    val before = MockBuffer(Seq("140.0", "#comment", "149.0"))
+    val after = runToCelsius2(before)
+
+    after.logs shouldBe Vector(
+      "open to read fahrenheit.txt",
+      "open to write celsius.txt",
+      "read line Some(140.0)",
+      "write line 60.0",
+      "read line Some(#comment)",
+      "read line Some(149.0)",
+      "write line 65.0",
+      "read line None",
+      "close file by MockHandlerToWrite(celsius.txt)",
+      "close file by MockHandlerToRead(fahrenheit.txt)"
     )
     after.closed shouldBe Vector(
       MockHandlerToWrite("celsius.txt"),

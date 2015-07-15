@@ -74,6 +74,7 @@ object Exercise_15_9 {
     }
   }
 
+  // read lines as iterator, then write these lines
   def onFree(process: Converter): Free[FileOperation, Unit] = {
 
     // is there a solution to satisfy @tailrec?
@@ -98,22 +99,52 @@ object Exercise_15_9 {
     } yield ()
   }
 
+  // read and write a line in order to the end
+  def onFree2(process: Converter): Free[FileOperation, Unit] = {
+
+    // is there a solution to satisfy @tailrec?
+    def loop(p: Converter, r: HandleR, w: HandleW): Free[FileOperation, Unit] =
+      p match {
+        case Emit(head, tail) =>
+          Suspend(WriteLine(w, head)) flatMap {_ => loop(tail, r, w)}
+        case Await(receive) =>
+          Suspend(ReadLine(r)) flatMap { line => loop(receive(line), r, w) }
+        case Halt() =>
+          Return(())
+      }
+
+    for {
+      r <- Suspend(OpenToRead("fahrenheit.txt"))
+      w <- Suspend(OpenToWrite("celsius.txt"))
+      _ <- loop(process, r, w)
+      _ <- Suspend(CloseFile(w))
+      _ <- Suspend(CloseFile(r))
+    } yield ()
+  }
+
   def toCelsius(fahrenheit: Double): Double = (5.0 / 9.0) * (fahrenheit - 32.0)
 
-  def runToCelsius(buffer: MockBuffer): MockBuffer = {
-    import Process.{filter, lift}
+  import Process.{filter, lift}
 
-    val process =
-      filter[String](line => ! line.startsWith("#")) |>
-      filter(line => ! line.isEmpty) |>
-      lift(_.toDouble) |>
-      lift(toCelsius) |>
-      lift(_.toString)
+  val process =
+    filter[String](line => ! line.startsWith("#")) |>
+    filter(line => ! line.isEmpty) |>
+    lift(_.toDouble) |>
+    lift(toCelsius) |>
+    lift(_.toString)
 
-    val state = MockInterpreter run onFree(process)
+  type MockRunner = MockBuffer => MockBuffer
+
+  def runBy(f: Converter => Free[FileOperation, Unit]): MockRunner = buffer => {
+    val state = MockInterpreter run f(process)
     val (_, after) = state run buffer
     after
   }
+
+  def runToCelsius: MockRunner = runBy(onFree)
+
+  def runToCelsius2: MockRunner = runBy(onFree2)
+
   def main(args: Array[String]): Unit = {
     val before = MockBuffer(Seq("140.0", "#comment", "149.0"))
     val after = runToCelsius(before)
@@ -128,6 +159,8 @@ case class OpenToRead(file: String) extends FileOperation[HandleR]
 case class OpenToWrite(file: String) extends FileOperation[HandleW]
 
 case class ReadLines(h: HandleR) extends FileOperation[Iterator[String]]
+
+case class ReadLine(h: HandleR) extends FileOperation[Option[String]]
 
 case class WriteLine(h: HandleW, line: String) extends FileOperation[Unit]
 
@@ -192,11 +225,18 @@ object MockInterpreter {
       case ReadLines(handler) => MockState { buffer =>
         buffer.lines.toIterator -> buffer.log("read lines")
       }
+      case ReadLine(handler) => MockState { buffer =>
+        val (line, next) = buffer.lines match {
+          case head +: tail => Some(head) -> buffer.copy(lines = tail)
+          case _ => None -> buffer
+        }
+        line -> next.log(s"read line $line")
+      }
       case WriteLine(handler, line) => MockState { buffer =>
         () -> buffer.log(s"write line $line")
       }
       case CloseFile(handler) => MockState { buffer =>
-        () -> buffer.log(s"close file $handler").close(handler)
+        () -> buffer.log(s"close file by $handler").close(handler)
       }
     }
   }
