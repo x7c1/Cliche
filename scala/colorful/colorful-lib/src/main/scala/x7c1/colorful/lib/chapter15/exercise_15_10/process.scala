@@ -117,9 +117,18 @@ object Process {
     eval(acquire) flatMap { r => use(r).onComplete(release(r)) }
   }
 
+  /* Listing 15-24 */
+  type Process1[I,O] = Process[Is[I]#f, O]
 }
 
 trait MonadCatch[F[_]] extends Monad[F] {
   def attempt[A](a: F[A]): F[Either[Throwable,A]]
   def fail[A](t: Throwable): F[A]
 }
+
+/* Listing 15-23 */
+case class Is[I]() {
+  sealed trait f[X]
+  val Get = new f[I] {}
+}
+
