@@ -84,6 +84,39 @@ object Process {
     try p
     catch { case e: Throwable => Halt(e) }
 
+  /* Listing 15-17 */
+  def await[F[_],A,O]
+    (req: F[A])
+    (recv: Either[Throwable,A] => Process[F,O]): Process[F,O] = {
+
+    Await(req, recv)
+  }
+
+  import Listing_13_9.IO
+
+  /* Exercise 15.11 */
+  def eval[F[_],A](a: F[A]): Process[F,A] = await[F,A,A](a){
+    case Left(x) => Halt(x)
+    case Right(x) => Emit(x, Halt(End))
+  }
+  def eval_[F[_],A,B](a: F[A]): Process[F,B] = {
+    // from answer : ignore all output of a Process
+    def drain: Process[F,A] => Process[F,B] = {
+      case Await(req, recv) => Await(req, recv andThen drain)
+      case Emit(head, tail) => drain(tail)
+      case Halt(err) => Halt(err)
+    }
+    drain(eval(a))
+  }
+
+  def resource[R,O]
+    (acquire: IO[R])
+    (use: R => Process[IO,O])
+    (release: R => Process[IO,O]): Process[IO,O] = {
+
+    eval(acquire) flatMap { r => use(r).onComplete(release(r)) }
+  }
+
 }
 
 trait MonadCatch[F[_]] extends Monad[F] {
