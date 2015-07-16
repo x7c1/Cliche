@@ -63,7 +63,7 @@ trait Process[F[_],O]{
   }
 }
 
-object Process {
+object Process extends Exercise_15_12 {
 
   case class Await[F[_],A,O](
     req: F[A],
@@ -132,3 +132,8 @@ case class Is[I]() {
   val Get = new f[I] {}
 }
 
+trait Exercise_15_12 {
+  self: Process.type =>
+
+  def join[F[_],O](p: Process[F, Process[F,O]]): Process[F,O] = p.flatMap(identity)
+}
