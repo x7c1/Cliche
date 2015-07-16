@@ -67,8 +67,6 @@ object MockInterpreter {
 }
 
 object MockRunner {
-  type Runner = MockBuffer => MockBuffer
-
   def by(free: Free[FileOperation, Unit]): MockBuffer => MockBuffer = { buffer =>
     val state = MockInterpreter run free
     val (_, after) = state run buffer
