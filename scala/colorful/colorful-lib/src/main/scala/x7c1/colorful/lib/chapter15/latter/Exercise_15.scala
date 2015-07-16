@@ -1,4 +1,4 @@
-package x7c1.colorful.lib.chapter15.exercise_15_10
+package x7c1.colorful.lib.chapter15.latter
 
 import java.util.concurrent.ExecutorService
 
@@ -9,7 +9,7 @@ import x7c1.colorful.lib.chapter13.{Exercise_13_3, Listing_13_9}
 import scala.language.higherKinds
 
 trait Process[F[_],O]{
-  import x7c1.colorful.lib.chapter15.exercise_15_10.Process.{Await, Halt, Emit, Try, End, Kill, await}
+  import x7c1.colorful.lib.chapter15.latter.Process.{Await, Halt, Emit, Try, End, Kill, await}
 
   /* Listing 15-15 */
   def onHalt(f: Throwable => Process[F,O]): Process[F,O] = this match {

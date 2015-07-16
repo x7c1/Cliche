@@ -1,9 +1,10 @@
-package x7c1.colorful.lib.chapter15
+package x7c1.colorful.lib.chapter15.former
 
 import org.scalatest.{FlatSpecLike, Matchers}
+import x7c1.colorful.lib.chapter15.former
 
 class Exercise_15_1_Tests extends FlatSpecLike with Matchers {
-  import Process.{drop, dropWhile, take, takeWhile}
+  import former.Process.{drop, dropWhile, take, takeWhile}
 
   "take" should "halt after encountering the given number of elements" in {
     take(3)(Stream(1,2,3,4,5)).toList shouldBe List(1,2,3)
@@ -20,7 +21,7 @@ class Exercise_15_1_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_2_Tests extends FlatSpecLike with Matchers {
-  import Process.count
+  import former.Process.count
 
   "count" should "emit the number of elements" in {
     count(Stream("a","b","c")) shouldBe Stream(1,2,3)
@@ -28,7 +29,7 @@ class Exercise_15_2_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_3_Tests extends FlatSpecLike with Matchers {
-  import Process.mean
+  import former.Process.mean
 
   "mean" should "emit a running average of the values" in {
     mean(Stream(1.5,2.5,3.5)) shouldBe Stream(1.5,2.0,2.5)
@@ -36,7 +37,7 @@ class Exercise_15_3_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_4_Tests extends FlatSpecLike with Matchers {
-  import Process.count2
+  import former.Process.count2
 
   "count2" should "emit the number of elements" in {
     count2(Stream("a","b","c")) shouldBe Stream(1,2,3)
@@ -44,7 +45,7 @@ class Exercise_15_4_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_5_Tests extends FlatSpecLike with Matchers {
-  import Process.{filter, lift}
+  import former.Process.{filter, lift}
 
   "|>" should "fuse the transformations done by left and right" in {
     val x = Stream(1, 2, 3, 4, 5, 6)
@@ -62,7 +63,7 @@ class Exercise_15_5_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_6_Tests extends FlatSpecLike with Matchers {
-  import Process.drop
+  import former.Process.drop
 
   "zipWithIndex" should "emit a running count of values" in {
     val x = Stream("a","b","c")
@@ -80,7 +81,7 @@ class Exercise_15_6_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_7_Tests extends FlatSpecLike with Matchers {
-  import Process.mean2
+  import former.Process.mean2
 
   "mean2" should "behave same as mean" in {
     mean2(Stream(1.5,2.5,3.5)) shouldBe Stream(1.5,2.0,2.5)
@@ -88,7 +89,7 @@ class Exercise_15_7_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_8_Tests extends FlatSpecLike with Matchers {
-  import Process.exists
+  import former.Process.exists
 
   "exists" should "" in {
     exists[Int](_ % 2 == 0)(Stream(1,3,5,6,7)) shouldBe Stream(true)
@@ -97,7 +98,7 @@ class Exercise_15_8_Tests extends FlatSpecLike with Matchers {
 }
 
 class Exercise_15_9_Tests extends FlatSpecLike with Matchers {
-  import Exercise_15_9.{runMockViaIterator, runMock}
+  import Exercise_15_9.{runMock, runMockViaIterator}
 
   "runToCelsius" can "read lines and write them in order" in {
     val before = MockBuffer(Seq("140.0", "#comment", "149.0"))

@@ -1,4 +1,4 @@
-package x7c1.colorful.lib.chapter15
+package x7c1.colorful.lib.chapter15.former
 
 import scala.language.higherKinds
 

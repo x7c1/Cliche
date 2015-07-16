@@ -1,8 +1,8 @@
-package x7c1.colorful.lib.chapter15
+package x7c1.colorful.lib.chapter15.former
 
-import java.io.{PrintWriter, File}
+import java.io.{File, PrintWriter}
 
-import x7c1.colorful.lib.chapter13.{Return, Suspend, Free, Listing_13_9}
+import x7c1.colorful.lib.chapter13.{Free, Listing_13_9, Return, Suspend}
 
 import scala.annotation.tailrec
 
