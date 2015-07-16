@@ -1,15 +1,12 @@
 package x7c1.colorful.lib.chapter15.latter
 
-import java.util.concurrent.ExecutorService
-
-import fpinscala.parallelism.Par
-import x7c1.colorful.lib.chapter11.{Monad, Exercise_11_1}
-import x7c1.colorful.lib.chapter13.{Exercise_13_3, Listing_13_9}
+import x7c1.colorful.lib.chapter11.Monad
+import x7c1.colorful.lib.chapter13.Listing_13_9
 
 import scala.language.higherKinds
 
 trait Process[F[_],O]{
-  import x7c1.colorful.lib.chapter15.latter.Process.{Await, Halt, Emit, Try, End, Kill, await}
+  import x7c1.colorful.lib.chapter15.latter.Process.{Await, Emit, End, Halt, Kill, Try, await}
 
   /* Listing 15-15 */
   def onHalt(f: Throwable => Process[F,O]): Process[F,O] = this match {
@@ -119,6 +116,22 @@ object Process extends Exercise_15_12 {
 
   /* Listing 15-24 */
   type Process1[I,O] = Process[Is[I]#f, O]
+
+  def sample = {
+    implicit def m: MonadCatch[IO] = new MonadCatch[IO] {
+      override def attempt[A](io: IO[A]): IO[Either[Throwable, A]] = IO {
+        try Right(IO run io)
+        catch { case e: Throwable => Left(e) }
+      }
+      override def fail[A](t: Throwable): IO[A] = throw t
+
+      override def flatMap[A, B](ma: IO[A])(f: A => IO[B]): IO[B] = ma flatMap f
+
+      override def unit[A](a: => A): IO[A] = IO(a)
+    }
+    val converter: Process[IO,Unit] = ???
+    converter.runLog
+  }
 }
 
 trait MonadCatch[F[_]] extends Monad[F] {
