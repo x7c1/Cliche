@@ -1,6 +1,7 @@
 package example
 
-import x7c1.salad.inspector.{TypeDigest, TypeReflector}
+import x7c1.salad.inspector.TypeDigest
+import x7c1.salad.inspector.reflect.TypeReflector
 
 object InspectorSample extends App {
   val digest = TypeReflector.inspect[SampleStructure]
