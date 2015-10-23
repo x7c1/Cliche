@@ -1,0 +1,9 @@
+.DS_Store
+
+.idea
+.idea_modules
+
+target
+
+local.properties
+custom-lib
