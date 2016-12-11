@@ -22,7 +22,7 @@ class StrictParser private (items: Seq[String]) {
   private def next(filter: Filter): Parser[Seq[String]] = {
     val (consumed, remains) = items partition filter
     if (consumed.nonEmpty){
-      ReductiveParser from remains map (consumed ++ _)
+      StrictParser from remains map (consumed ++ _)
     } else {
       failure("input not matched")
     }
