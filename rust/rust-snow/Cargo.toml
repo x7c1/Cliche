@@ -5,3 +5,4 @@ authors = ["haco"]
 
 [dependencies]
 iron = "0.4.*"
+router = "*"
