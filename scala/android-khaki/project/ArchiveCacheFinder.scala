@@ -3,17 +3,27 @@ import sbt._
 
 class ArchiveCacheFinder(cacheDirectory: File) {
 
-  def find(moduleId: ModuleID): Option[ArchiveCache] = {
+  def search(moduleId: ModuleID): Either[FinderError, ArchiveCache] = {
     val directory = cacheDirectory /
       moduleId.organization.replace(".", "/") /
       moduleId.name /
       moduleId.revision
 
-    directory / s"${moduleId.name}-${moduleId.revision}.aar" match {
-      case archive if archive.exists() =>
-        Some apply ArchiveCache.aar(archive, moduleId)
-      case _ =>
-        None
+    val prefix = s"${moduleId.name}-${moduleId.revision}"
+
+    def loadArchive = directory / s"$prefix.aar" match {
+      case x if x.exists() => Right(x)
+      case x => Left(FinderError(s"archive not found: $x"))
     }
+    def loadPom = directory / s"$prefix.pom" match {
+      case x if x.exists() => Right(x)
+      case x => Left(FinderError(s"pom not found: $x"))
+    }
+    for {
+      archive <- loadArchive.right
+      pom <- loadPom.right
+    } yield ArchiveCache.aar(archive, pom, moduleId)
   }
 }
+
+case class FinderError(message: String)

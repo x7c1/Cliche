@@ -1,6 +1,6 @@
 import sbt.Def.Classpath
 import sbt.Path.richFile
-import sbt.{Attributed, File, ModuleID, PathFinder, ProcessLogger}
+import sbt.{Attributed, File, PathFinder, ProcessLogger}
 
 
 sealed trait ArchiveCacheSplicer {
@@ -22,22 +22,16 @@ object ArchiveCacheSplicer {
     }
   }
 
-  class Factory(
-    project: File,
-    cacheDirectory: File,
-    unmanagedDirectory: File) {
-
-    def create(moduleId: ModuleID): ArchiveCacheSplicer = {
-      new ArchiveCacheFinder(cacheDirectory) find moduleId match {
-        case Some(cache: AarCache) =>
-          new AarCacheExpander(unmanagedDirectory, cache)
-        case Some(cache) =>
-          throw new IllegalArgumentException(s"unknown archive type: ${cache.getClass.getName}")
-        case None =>
-          throw new IllegalArgumentException(s"module not found: $moduleId")
+  class Factory(unmanagedDirectory: File) {
+    def createFrom(cache: ArchiveCache): ArchiveCacheSplicer = {
+      cache match {
+        case aar: AarCache =>
+          new AarCacheExpander(unmanagedDirectory, aar)
+        case unknown =>
+          val name = unknown.getClass.getName
+          throw new IllegalArgumentException(s"unknown archive type: $name")
       }
     }
-
   }
 
 }
