@@ -3,6 +3,20 @@ import sbt._
 
 class ArchiveCacheFinder(cacheDirectory: File) {
 
+  def fromDependency(dependency: PomProjectDependency): Either[FinderError, ArchiveCache] = {
+    val searcher = new Searcher(ModuleID(
+      organization = dependency.groupId,
+      name = dependency.artifactId,
+      revision = dependency.version
+    ))
+    val factory = dependency.moduleType match {
+      case Some("aar") => searcher.toAar
+      case Some("jar") | None => searcher.toJar
+      case Some(x) => Left(FinderError(s"unknown dependency type: $x"))
+    }
+    factory.right flatMap searcher.loadPom.right.map
+  }
+
   def search(moduleId: ModuleID): Either[FinderError, ArchiveCache] = {
     val searcher = new Searcher(moduleId)
     val factory = for {
