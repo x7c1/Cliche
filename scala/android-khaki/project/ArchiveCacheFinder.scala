@@ -4,26 +4,48 @@ import sbt._
 class ArchiveCacheFinder(cacheDirectory: File) {
 
   def search(moduleId: ModuleID): Either[FinderError, ArchiveCache] = {
-    val directory = cacheDirectory /
+    val searcher = new Searcher(moduleId)
+    val factory = for {
+      _ <- searcher.toAar.left
+      _ <- searcher.toJar.left
+    } yield {
+      FinderError(s"neither .aar nor .jar found: $moduleId")
+    }
+    factory.right flatMap searcher.loadPom.right.map
+  }
+
+  private class Searcher(moduleId: ModuleID) {
+    private val directory = cacheDirectory /
       moduleId.organization.replace(".", "/") /
       moduleId.name /
       moduleId.revision
 
-    val prefix = s"${moduleId.name}-${moduleId.revision}"
+    private val prefix = s"${moduleId.name}-${moduleId.revision}"
 
-    def loadArchive = directory / s"$prefix.aar" match {
-      case x if x.exists() => Right(x)
-      case x => Left(FinderError(s"archive not found: $x"))
+    private def load(name: String)(ifNotFound: File => String) =
+      directory / name match {
+        case x if x.exists() => Right(x)
+        case x => Left(FinderError(ifNotFound(x)))
+      }
+
+    def loadPom = {
+      load(s"$prefix.pom") { x => s"pom not found: $x" }
     }
-    def loadPom = directory / s"$prefix.pom" match {
-      case x if x.exists() => Right(x)
-      case x => Left(FinderError(s"pom not found: $x"))
+
+    def toAar = for {
+      archive <- load(s"$prefix.aar") { x => s"aar not found: $x" }.right
+    } yield {
+      ArchiveCache.aar(archive, _: File, moduleId)
     }
-    for {
-      archive <- loadArchive.right
-      pom <- loadPom.right
-    } yield ArchiveCache.aar(archive, pom, moduleId)
+
+    def toJar = for {
+      archive <- load(s"$prefix.jar") { x => s"jar not found: $x" }.right
+    } yield {
+      ArchiveCache.jar(archive, _: File, moduleId)
+    }
+
   }
+
 }
 
 case class FinderError(message: String)

@@ -22,14 +22,17 @@ object ArchiveCacheSplicer {
     }
   }
 
-  class Factory(unmanagedDirectory: File) {
-    def createFrom(cache: ArchiveCache): ArchiveCacheSplicer = {
+  class Factory(cacheDirectory: File, unmanagedDirectory: File) {
+    def fromCache(cache: ArchiveCache): ArchiveCacheSplicer = {
       cache match {
         case aar: AarCache =>
           new AarCacheExpander(unmanagedDirectory, aar)
+        case jar: JarCache =>
+          new JarCacheWatcher(cacheDirectory, jar)
         case unknown =>
           val name = unknown.getClass.getName
-          throw new IllegalArgumentException(s"unknown archive type: $name")
+          throw new IllegalArgumentException(
+            s"unknown archive type [$name] : ${cache.moduleId}")
       }
     }
   }
@@ -69,6 +72,19 @@ class AarCacheExpander(
       case e: Exception =>
         Left(new CacheExpanderError(e))
     }
+}
+
+class JarCacheWatcher(
+  cacheDirectory: File,
+  cache: JarCache) extends ArchiveCacheSplicer {
+
+  override def run(logger: ProcessLogger): Unit = {
+    logger info s"[done] ${cache.moduleId} jar found: ${cache.file}"
+  }
+
+  override def loadClasspath: Classpath = {
+    PathFinder(cache.file).classpath
+  }
 }
 
 class CacheExpanderError(val cause: Exception)
