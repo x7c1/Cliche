@@ -17,7 +17,7 @@ class ArchiveCacheFinder(cacheDirectory: File) {
     factory.right flatMap searcher.loadPom.right.map
   }
 
-  def search(moduleId: ModuleID): Either[FinderError, ArchiveCache] = {
+  def fromModule(moduleId: ModuleID): Either[FinderError, ArchiveCache] = {
     val searcher = new Searcher(moduleId)
     val factory = for {
       _ <- searcher.toAar.left

@@ -11,7 +11,7 @@ class CacheSplicersFactory(cacheDirectory: File, unmanagedDirectory: File) {
   private val finder = new ArchiveCacheFinder(cacheDirectory)
 
   private def toCache(moduleID: ModuleID): ArchiveCache = {
-    finder search moduleID match {
+    finder fromModule moduleID match {
       case Left(error) => throw new IllegalArgumentException(error.message)
       case Right(cache) => cache
     }
