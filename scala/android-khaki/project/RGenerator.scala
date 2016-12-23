@@ -1,33 +1,28 @@
-import sbt.{File, ProcessLogger}
-import sbt.Path.richFile
 import sbt.Process.stringToProcess
+import sbt.{File, ProcessLogger}
 
 class RGenerator(
   logger: ProcessLogger,
   sdk: AndroidSdk,
-  destination: File,
+  manifest: File,
   sourceDestination: File) {
 
-  def generateFrom(cache: AarCache): Int = {
-    val target = destination.getAbsolutePath
+  def generateFrom(resourceDirectories: Seq[File]): Int = {
 
-    /*
-      --auto-add-overlay
-      --non-constant-id
-      -v
-     */
+    val dirs = resourceDirectories map
+      (_.getAbsolutePath) map
+      ("-S " + _) mkString " "
 
     val command =
       s"""${sdk.buildTools.getAbsolutePath}/aapt package
-         | -m
-         | -S $target/res
-         | -J ${sourceDestination.getAbsolutePath}
-         | -M $target/AndroidManifest.xml
-         | -I ${sdk.platforms.absolutePath}/android.jar
-         | --generate-dependencies
+         | --auto-add-overlay
+         | $dirs
+         | -m -J ${sourceDestination.getAbsolutePath}
+         | -M ${manifest.getAbsolutePath}
+         | -I ${sdk.platforms.getAbsolutePath}/android.jar
          | """.stripMargin
 
-    println(command)
+//    logger info command
     command !< logger
   }
 }

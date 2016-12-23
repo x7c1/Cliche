@@ -9,6 +9,10 @@ object ArchiveCacheTraverser {
 
 class ArchiveCacheTraverser private(cacheDirectory: File) {
 
+  def resolve(cache: ArchiveCache): Either[FinderError, Seq[ArchiveCache]] = {
+    traverse(Seq(cache))
+  }
+
   def traverse(caches: Seq[ArchiveCache]): Either[FinderError, Seq[ArchiveCache]] = {
     loop(caches, ResolvedCaches.empty)
   }

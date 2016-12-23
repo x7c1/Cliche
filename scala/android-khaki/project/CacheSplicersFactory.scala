@@ -1,9 +1,9 @@
 import sbt.{File, ModuleID}
 
-class CacheSplicersFactory(cacheDirectory: File, unmanagedDirectory: File) {
+class CacheSplicersFactory(cacheDirectory: File, unmanagedDirectory: File, sdk: AndroidSdk) {
 
   def create(dependencies: Seq[String]): Seq[ArchiveCacheSplicer] = {
-    val create = new ArchiveCacheSplicer.Factory(cacheDirectory, unmanagedDirectory)
+    val create = new ArchiveCacheSplicer.Factory(cacheDirectory, unmanagedDirectory, sdk)
     val caches = dependencies map ModuleIdFactory.create map toCache
     filter(caches) map create.fromCache
   }

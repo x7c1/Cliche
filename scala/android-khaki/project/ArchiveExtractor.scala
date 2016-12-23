@@ -9,7 +9,7 @@ object ArchiveExtractor {
 
 class ArchiveExtractor private(logger: ProcessLogger, destination: File) {
 
-  def unzip(archive: File): Unit = {
+  def unzip(archive: File): Int = {
     s"unzip -o -d ${destination.getAbsolutePath} ${archive.getAbsolutePath}" !< logger
   }
 }
