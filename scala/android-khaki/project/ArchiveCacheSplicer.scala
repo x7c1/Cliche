@@ -4,7 +4,7 @@ import sbt.{Attributed, File, PathFinder, ProcessLogger, globFilter, singleFileF
 
 
 sealed trait ArchiveCacheSplicer {
-  def run(logger: ProcessLogger): Unit
+  def setupJars(logger: ProcessLogger): Unit
 
   def setupSources(logger: ProcessLogger): Unit
 
@@ -17,7 +17,7 @@ object ArchiveCacheSplicer {
 
   implicit class RichSplicers(splicers: Seq[ArchiveCacheSplicer]) {
     def runAll(logger: ProcessLogger) = {
-      splicers foreach (_ run logger)
+      splicers foreach (_ setupJars logger)
       splicers foreach (_ setupSources logger)
     }
 
@@ -77,7 +77,7 @@ class AarCacheExpander(
     Seq(sourceDestination.getAbsoluteFile)
   }
 
-  override def run(logger: ProcessLogger) = {
+  override def setupJars(logger: ProcessLogger) = {
     val either = for {
       _ <- mkdirs(destination).right
       code <- {
@@ -153,7 +153,7 @@ class JarCacheWatcher(
   cacheDirectory: File,
   cache: JarCache) extends ArchiveCacheSplicer {
 
-  override def run(logger: ProcessLogger) = {
+  override def setupJars(logger: ProcessLogger) = {
     logger info s"[done] ${cache.moduleId} jar found: ${cache.file}"
   }
 
