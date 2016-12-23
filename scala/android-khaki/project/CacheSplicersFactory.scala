@@ -19,7 +19,7 @@ class CacheSplicersFactory(cacheDirectory: File, unmanagedDirectory: File, sdk: 
 
   private def filter(caches: Seq[ArchiveCache]): Seq[ArchiveCache] = {
     val traverser = ArchiveCacheTraverser(cacheDirectory)
-    traverser traverse caches match {
+    traverser resolveAll caches match {
       case Left(error) => throw new IllegalArgumentException(error.message)
       case Right(xs) => xs
     }
