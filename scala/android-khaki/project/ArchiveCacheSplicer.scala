@@ -16,23 +16,6 @@ sealed trait ArchiveCacheSplicer {
 
 object ArchiveCacheSplicer {
 
-  implicit class RichSplicers(splicers: Seq[ArchiveCacheSplicer]) {
-    def runAll(logger: ProcessLogger) = {
-      splicers foreach (_ setupJars logger)
-      splicers foreach (_ setupSources logger)
-    }
-
-    def loadAllClasspath: Classpath = {
-      val empty: Classpath = Attributed blankSeq Seq()
-      splicers.foldLeft(empty)(_ ++ _.loadClasspath)
-    }
-
-    def loadAllSourceDirectories: Seq[File] = {
-      val empty: Seq[File] = Seq()
-      splicers.foldLeft(empty)(_ ++ _.sourceDirectories)
-    }
-  }
-
   class Factory(cacheDirectory: File, unmanagedDirectory: File, sdk: AndroidSdk) {
     def fromCache(cache: ArchiveCache): ArchiveCacheSplicer = {
       cache match {
