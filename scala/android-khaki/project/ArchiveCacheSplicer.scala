@@ -1,3 +1,4 @@
+import Extractor.==>
 import sbt.Def.Classpath
 import sbt.Path.richFile
 import sbt.{Attributed, File, PathFinder, ProcessLogger, globFilter, singleFileFinder}
@@ -116,10 +117,14 @@ class AarCacheExpander(
 
   private val traverser = ArchiveCacheTraverser(cacheDirectory)
 
+  private val notFound: Seq[File] ==> File = Extractor {
+    _ find (!_.exists())
+  }
+
   private def resourceDirectories: Either[CacheSplicerError, Seq[File]] = {
     val caches = traverser.resolve(cache).left map convertError
     caches.right map toResDirectories match {
-      case Right(NotExists(res)) => Left(CacheSplicerError.NotFound(res))
+      case Right(notFound(res)) => Left(CacheSplicerError.NotFound(res))
       case x => x
     }
   }
@@ -141,12 +146,6 @@ class AarCacheExpander(
       case e: Exception =>
         Left(CacheSplicerError.Unexpected(e))
     }
-}
-
-object NotExists {
-  def unapply(files: Seq[File]): Option[File] = {
-    files.find(!_.exists())
-  }
 }
 
 class JarCacheWatcher(
