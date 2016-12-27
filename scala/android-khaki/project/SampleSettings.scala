@@ -1,16 +1,17 @@
-import sbt.Keys.{streams, unmanagedJars, unmanagedSourceDirectories}
+import KhakiKeys.expand
+import sbt.Keys.{streams, thisProject, unmanagedJars, unmanagedSourceDirectories}
 import sbt._
+import sbtassembly.AssemblyKeys.{assembly, assemblyExcludedJars, assemblyMergeStrategy}
+import sbtassembly.MergeStrategy
 
-object Khaki {
+object KhakiKeys {
 
-  lazy val expand = taskKey[Unit]("expand aar")
+  val expand = taskKey[Unit]("expand aar")
 
-  lazy val loadPom = taskKey[Unit]("load pom.xml")
-
-  def all(project: File): Seq[Def.SettingsDefinition] = SampleSettings(project).all
+  val loadPom = taskKey[Unit]("load pom.xml")
 }
 
-case class SampleSettings(project: File) {
+object SampleSettings {
 
   val dependencies = Seq(
     "com.android.support:recyclerview-v7:25.0.1",
@@ -26,25 +27,44 @@ case class SampleSettings(project: File) {
     platformsVersion = "android-25"
   )
 
-  lazy val splicers = {
-    val factory = new CacheSplicersFactory(
+  lazy val splicers = Def setting {
+    val factory = new ArchiveCacheSplicers.Factory(
       cacheDirectory = sdk.extras / "android/m2repository",
-      unmanagedDirectory = project / "libs-generated",
+      unmanagedDirectory = thisProject.value.base / "libs-generated",
       sdk = sdk
     )
     factory create dependencies
   }
 
-  def all: Seq[SettingsDefinition] = Seq(
-    Khaki.expand := {
-      splicers runAll streams.value.log
-    },
-    (unmanagedSourceDirectories in Compile) ++= {
-      splicers.loadAllSourceDirectories
-    },
-    (unmanagedJars in Compile) ++= {
-      splicers.loadAllClasspath ++ (sdk.platforms * "*.jar").classpath
+  def excludeFromAssembly(path: String): Boolean = {
+    val `R.java` = ".*/R(\\$[^.]+)?.class$"
+    path matches `R.java`
+  }
+
+  def tasks: Seq[SettingsDefinition] = Seq(
+    expand := {
+      splicers.value runAll streams.value.log
     }
   )
+
+  def settings: Seq[SettingsDefinition] = Seq(
+    (unmanagedSourceDirectories in Compile) ++= {
+      splicers.value.sourceDirectories
+    },
+    (unmanagedJars in Compile) ++= {
+      splicers.value.classpath
+    },
+    assemblyExcludedJars in assembly ++= {
+      splicers.value.classpath
+    },
+    assemblyMergeStrategy in assembly ~= (original => {
+      case path if excludeFromAssembly(path) => MergeStrategy.discard
+      case path => original(path)
+    })
+  )
+
+  def all: Seq[SettingsDefinition] = {
+    tasks ++ settings
+  }
 
 }

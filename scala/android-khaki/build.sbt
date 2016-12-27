@@ -1,6 +1,5 @@
 
 lazy val sample: Project = project.
-  settings(Khaki.all(file("sample")):_*)
+  settings(SampleSettings.all: _*)
 
-lazy val root = Project(id = "root", base = file(".")).
-  settings(Khaki.all(sample.base):_*)
+lazy val root = Project(id = "root", base = file("."))
