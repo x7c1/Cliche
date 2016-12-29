@@ -1,10 +1,12 @@
-import KhakiKeys.expand
+import KhakiKeys.{expand, khaki}
+import sbt.Configurations.config
 import sbt.Keys.{streams, thisProject, unmanagedJars, unmanagedSourceDirectories}
 import sbt._
-import sbtassembly.AssemblyKeys.{assembly, assemblyExcludedJars, assemblyMergeStrategy}
-import sbtassembly.MergeStrategy
 
 object KhakiKeys {
+  val khaki = config("khaki")
+
+  val outputPath = settingKey[File]("path for jars to be generated")
 
   val expand = taskKey[Unit]("expand aar")
 
@@ -42,7 +44,7 @@ object SampleSettings {
   }
 
   def tasks: Seq[SettingsDefinition] = Seq(
-    expand := {
+    expand in khaki := {
       splicers.value runAll streams.value.log
     }
   )
@@ -53,14 +55,7 @@ object SampleSettings {
     },
     (unmanagedJars in Compile) ++= {
       splicers.value.classpath
-    },
-    assemblyExcludedJars in assembly ++= {
-      splicers.value.classpath
-    },
-    assemblyMergeStrategy in assembly ~= (original => {
-      case path if excludeFromAssembly(path) => MergeStrategy.discard
-      case path => original(path)
-    })
+    }
   )
 
   def all: Seq[SettingsDefinition] = {
