@@ -38,11 +38,6 @@ object SampleSettings {
     factory create dependencies
   }
 
-  def excludeFromAssembly(path: String): Boolean = {
-    val `R.java` = ".*/R(\\$[^.]+)?.class$"
-    path matches `R.java`
-  }
-
   def tasks: Seq[SettingsDefinition] = Seq(
     expand in khaki := {
       splicers.value runAll streams.value.log
