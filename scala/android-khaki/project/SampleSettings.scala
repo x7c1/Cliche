@@ -6,11 +6,7 @@ import sbt._
 object KhakiKeys {
   val khaki = config("khaki")
 
-  val outputPath = settingKey[File]("path for jars to be generated")
-
   val expand = taskKey[Unit]("expand aar")
-
-  val loadPom = taskKey[Unit]("load pom.xml")
 }
 
 object SampleSettings {
