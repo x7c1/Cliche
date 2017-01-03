@@ -18,15 +18,23 @@ object AndroidSdk {
   def apply(
     localProperties: File,
     buildToolsVersion: String,
-    platformsVersion: String): AndroidSdk = {
+    compileSdkVersion: Int): AndroidSdk = {
 
     val root = file(loadPath(localProperties))
     AndroidSdkImpl(
-      root = root,
-      buildTools = root / "build-tools" / buildToolsVersion,
-      platforms = root / "platforms" / platformsVersion,
-      extras = root / "extras"
+      root = validate(root),
+      buildTools = validate(root / "build-tools" / buildToolsVersion),
+      platforms = validate(root / "platforms" / s"android-$compileSdkVersion"),
+      extras = validate(root / "extras")
     )
+  }
+
+  private def validate(file: File): File = {
+    if (file.exists()) {
+      file
+    } else {
+      throw new IllegalArgumentException(s"file not found: $file")
+    }
   }
 
   def loadPath(localProperties: File): String = {

@@ -1,4 +1,4 @@
-import KhakiKeys.{dependencies, khaki}
+import KhakiKeys.{dependencies, khaki, sdk}
 import sbtassembly.AssemblyKeys.{assemblyJarName, assemblyOption, assemblyOutputPath}
 
 lazy val sample: Project = project.
@@ -12,6 +12,11 @@ lazy val sample: Project = project.
 lazy val `android-jars` = project.
   settings(SampleSettings.all: _*).
   settings(
+    sdk in khaki := AndroidSdk(
+      localProperties = file("local.properties"),
+      buildToolsVersion = "23.0.3",
+      compileSdkVersion = 25
+    ),
     dependencies in khaki := Seq(
       "com.android.support:recyclerview-v7:25.0.1",
       "com.android.support:appcompat-v7:25.0.1",
