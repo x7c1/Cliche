@@ -6,3 +6,5 @@ target
 local.properties
 
 libs-generated
+
+libs-expanded

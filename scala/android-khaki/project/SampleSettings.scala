@@ -1,6 +1,6 @@
-import KhakiKeys.{dependencies, expand, khaki, sdk}
+import KhakiKeys.{dependencies, expand, khaki, sdk, unmanagedDirectory}
 import sbt.Configurations.config
-import sbt.Keys.{streams, thisProject, unmanagedJars, unmanagedSourceDirectories}
+import sbt.Keys.{streams, unmanagedJars, unmanagedSourceDirectories}
 import sbt._
 
 object KhakiKeys {
@@ -8,9 +8,11 @@ object KhakiKeys {
 
   val dependencies = settingKey[Seq[String]]("dependencies")
 
-  val expand = taskKey[Unit]("expand aar and jars")
+  val unmanagedDirectory = settingKey[File]("unmanaged jars directory")
 
   val sdk = settingKey[AndroidSdk]("Android SDK")
+
+  val expand = taskKey[Unit]("expand archives according to dependencies")
 }
 
 object SampleSettings {
@@ -18,7 +20,7 @@ object SampleSettings {
   lazy val splicers = Def setting {
     val factory = new ArchiveCacheSplicers.Factory(
       cacheDirectory = (sdk in khaki).value.extras / "android/m2repository",
-      unmanagedDirectory = thisProject.value.base / "libs-generated",
+      unmanagedDirectory = (unmanagedDirectory in khaki).value,
       sdk = (sdk in khaki).value
     )
     factory create (dependencies in khaki).value

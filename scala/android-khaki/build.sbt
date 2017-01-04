@@ -1,11 +1,16 @@
-import KhakiKeys.{dependencies, khaki, sdk}
+import KhakiKeys.{dependencies, khaki, sdk, unmanagedDirectory}
 import sbtassembly.AssemblyKeys.{assemblyJarName, assemblyOption, assemblyOutputPath}
 
 lazy val sample: Project = project.
   settings(
     unmanagedJars in Compile ++= {
-      val output = (assemblyOutputPath in assembly in `android-jars`).value
-      output.get.classpath
+      (assemblyOutputPath in assembly in `android-jars`).value.get.classpath
+    },
+    assemblyExcludedJars in assembly ++= {
+      (assemblyOutputPath in assembly in `android-jars`).value.get.classpath
+    },
+    assemblyOption in assembly ~= {
+      _ copy (includeScala = false)
     }
   )
 
@@ -17,6 +22,9 @@ lazy val `android-jars` = project.
       buildToolsVersion = "23.0.3",
       compileSdkVersion = 25
     ),
+    unmanagedDirectory in khaki := {
+      thisProject.value.base / "libs-expanded"
+    },
     dependencies in khaki := Seq(
       "com.android.support:recyclerview-v7:25.0.1",
       "com.android.support:appcompat-v7:25.0.1",
