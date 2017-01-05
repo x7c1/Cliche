@@ -25,13 +25,9 @@ lazy val `android-jars` = project.
     unmanagedDirectory in khaki := {
       thisProject.value.base / "libs-expanded"
     },
-    dependencies in khaki := Seq(
-      "com.android.support:recyclerview-v7:25.0.1",
-      "com.android.support:appcompat-v7:25.0.1",
-      "com.android.support:design:25.0.1",
-      "com.android.support:cardview-v7:25.0.1",
-      "com.android.support:support-compat:25.0.1"
-    )
+    dependencies in khaki := {
+      DependenciesLoader loadFrom file("targets.gradle")
+    }
   ).
   settings(
     assemblyOption in assembly ~= {

@@ -1,3 +1,4 @@
+import Extractor.==>
 import KhakiKeys.{dependencies, expand, khaki, sdk, unmanagedDirectory}
 import sbt.Configurations.config
 import sbt.Keys.{streams, unmanagedJars, unmanagedSourceDirectories}
@@ -43,6 +44,28 @@ object SampleSettings {
 
   def all: Seq[SettingsDefinition] = {
     tasks ++ settings
+  }
+
+}
+
+object DependenciesLoader {
+
+  def loadFrom(file: File): Seq[String] = {
+    val lines = io.Source.fromFile(file).getLines() collect {
+      case toDependency(line) => line
+    }
+    lines.toSeq
+  }
+
+  private val toDependency: String ==> String = Extractor {
+    import sbt.complete.DefaultParsers._
+    val dependency = {
+      val quoted1 = "'" ~> NotSpace <~ "'"
+      val quoted2 = '"' ~> NotSpace <~ '"'
+      Space.+ ~> "compile" ~> Space.+ ~> (quoted1 | quoted2)
+    }
+    line =>
+      parse(line, dependency).right.toOption
   }
 
 }
