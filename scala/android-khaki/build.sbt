@@ -1,4 +1,5 @@
 import KhakiKeys.{splice, splicerDependencies, splicerSdk}
+import PropertyLoader.{buildToolsVersion, compileSdkVersion}
 import sbtassembly.AssemblyKeys.{assemblyJarName, assemblyOption, assemblyOutputPath}
 
 lazy val sample: Project = project.
@@ -19,8 +20,8 @@ lazy val `android-jars` = project.
   settings(
     splicerSdk := AndroidSdk(
       localProperties = file("local.properties"),
-      buildToolsVersion = "23.0.3",
-      compileSdkVersion = 25
+      buildToolsVersion = buildToolsVersion via file("build.gradle"),
+      compileSdkVersion = compileSdkVersion via file("build.gradle")
     ),
     unmanagedBase in splice := {
       thisProject.value.base / "libs-expanded"
