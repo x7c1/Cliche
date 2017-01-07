@@ -1,15 +1,10 @@
 import Extractor.==>
-import KhakiKeys.{khaki, splice, splicerClean, splicerDependencies, splicerSdk, unmanagedDirectory}
-import sbt.Configurations.config
-import sbt.Keys.{clean, streams, unmanagedJars, unmanagedSourceDirectories}
+import KhakiKeys.{splice, splicerClean, splicerDependencies, splicerSdk}
+import sbt.Keys.{clean, streams, unmanagedBase, unmanagedJars, unmanagedSourceDirectories}
 import sbt._
 
 object KhakiKeys {
-  val khaki = config("khaki")
-
   val splicerDependencies = settingKey[Seq[String]]("dependencies")
-
-  val unmanagedDirectory = settingKey[File]("unmanaged jars directory")
 
   val splicerSdk = settingKey[AndroidSdk]("Android SDK")
 
@@ -23,7 +18,7 @@ object SampleSettings {
   lazy val splicers = Def setting {
     val factory = new ArchiveCacheSplicers.Factory(
       cacheDirectory = splicerSdk.value.extras / "android/m2repository",
-      unmanagedDirectory = (unmanagedDirectory in khaki).value,
+      unmanagedDirectory = (unmanagedBase in splice).value,
       sdk = splicerSdk.value
     )
     factory create splicerDependencies.value

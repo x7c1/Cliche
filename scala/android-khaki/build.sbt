@@ -1,4 +1,4 @@
-import KhakiKeys.{splicerDependencies, khaki, splicerSdk, unmanagedDirectory}
+import KhakiKeys.{splice, splicerDependencies, splicerSdk}
 import sbtassembly.AssemblyKeys.{assemblyJarName, assemblyOption, assemblyOutputPath}
 
 lazy val sample: Project = project.
@@ -22,7 +22,7 @@ lazy val `android-jars` = project.
       buildToolsVersion = "23.0.3",
       compileSdkVersion = 25
     ),
-    unmanagedDirectory in khaki := {
+    unmanagedBase in splice := {
       thisProject.value.base / "libs-expanded"
     },
     splicerDependencies := {
