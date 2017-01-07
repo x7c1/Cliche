@@ -1,5 +1,5 @@
 import Extractor.==>
-import sbt.File
+import sbt.{File, IO}
 import sbt.complete.Parser
 
 import scala.io.Source
@@ -8,13 +8,7 @@ object PropertyLoader {
 
   import sbt.complete.DefaultParsers._
 
-  def dependencies(file: File): Seq[String] = {
-    val parser = quoted
-    Loader(file, parser) loadMultiple "compile"
-  }
-
   object sdkRoot {
-
     def via(localProperties: File): File = {
       new File(loadPath(localProperties))
     }
@@ -43,6 +37,13 @@ object PropertyLoader {
     }
   }
 
+  object dependencies {
+    def via(file: File): Seq[String] = {
+      val parser = quoted
+      Loader(file, parser) loadMultiple "compile"
+    }
+  }
+
   private val quoted = {
     val quoted1 = "'" ~> NotSpace <~ "'"
     val quoted2 = '"' ~> NotSpace <~ '"'
@@ -64,7 +65,7 @@ object PropertyLoader {
 
     def loadMultiple(property: String): Seq[String] = {
       val pattern = toPattern(property)
-      sbt.IO.readLines(file) collect {
+      IO.readLines(file) collect {
         case pattern(line) => line
       }
     }

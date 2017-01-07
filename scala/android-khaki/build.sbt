@@ -1,5 +1,5 @@
 import KhakiKeys.{splice, splicerDependencies, splicerSdk}
-import PropertyLoader.{buildToolsVersion, compileSdkVersion, sdkRoot}
+import PropertyLoader.{buildToolsVersion, compileSdkVersion, dependencies, sdkRoot}
 import sbtassembly.AssemblyKeys.{assemblyJarName, assemblyOption, assemblyOutputPath}
 
 lazy val sample: Project = project.
@@ -27,7 +27,7 @@ lazy val `android-jars` = project.
       thisProject.value.base / "libs-expanded"
     },
     splicerDependencies := {
-      PropertyLoader dependencies file("targets.gradle")
+      dependencies via file("targets.gradle")
     },
     clean := {
       FileCleaner remove (assemblyOutputPath in assembly).value
