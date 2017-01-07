@@ -24,7 +24,7 @@ object ArchiveCacheSplicer {
         case aar: AarCache =>
           new AarCacheExpander(cacheDirectory, unmanagedDirectory, sdk, aar)
         case jar: JarCache =>
-          new JarCacheWatcher(cacheDirectory, jar)
+          new JarCacheLoader(cacheDirectory, jar)
         case unknown =>
           val name = unknown.getClass.getName
           throw new IllegalArgumentException(
@@ -138,7 +138,7 @@ class AarCacheExpander(
   }
 }
 
-class JarCacheWatcher(
+class JarCacheLoader(
   cacheDirectory: File,
   cache: JarCache) extends ArchiveCacheSplicer {
 
