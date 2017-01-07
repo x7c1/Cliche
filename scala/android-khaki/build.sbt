@@ -27,6 +27,10 @@ lazy val `android-jars` = project.
     },
     splicerDependencies := {
       DependenciesLoader loadFrom file("targets.gradle")
+    },
+    clean := {
+      FileCleaner remove (assemblyOutputPath in assembly).value
+      clean.value
     }
   ).
   settings(

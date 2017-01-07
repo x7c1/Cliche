@@ -1,13 +1,15 @@
 import Extractor.==>
 import sbt.Def.Classpath
 import sbt.Path.richFile
-import sbt.{Attributed, File, PathFinder, ProcessLogger, globFilter, singleFileFinder}
+import sbt.{File, PathFinder, ProcessLogger, globFilter, singleFileFinder}
 
 
 sealed trait ArchiveCacheSplicer {
   def setupJars(logger: ProcessLogger): Unit
 
   def setupSources(logger: ProcessLogger): Unit
+
+  def clean(logger: ProcessLogger): Unit
 
   def loadClasspath: Classpath
 
@@ -129,6 +131,11 @@ class AarCacheExpander(
       case e: Exception =>
         Left(CacheSplicerError.Unexpected(e))
     }
+
+  override def clean(logger: ProcessLogger): Unit = {
+    FileCleaner remove destination
+    logger info s"[done] removed: $destination"
+  }
 }
 
 class JarCacheWatcher(
@@ -136,11 +143,11 @@ class JarCacheWatcher(
   cache: JarCache) extends ArchiveCacheSplicer {
 
   override def setupJars(logger: ProcessLogger) = {
-    logger info s"[done] ${cache.moduleId} jar found: ${cache.file}"
+    logger info s"[done] skipped: ${cache.moduleId} jar found: ${cache.file}"
   }
 
   override def setupSources(logger: ProcessLogger) = {
-    logger info s"[skip] no source to generate: ${cache.file}"
+    logger info s"[done] skipped: no source to generate: ${cache.file.name}"
   }
 
   override def loadClasspath: Classpath = {
@@ -149,4 +156,7 @@ class JarCacheWatcher(
 
   override def sourceDirectories = Seq()
 
+  override def clean(logger: ProcessLogger): Unit = {
+    logger info s"[done] skipped: no files to clean: ${cache.moduleId}"
+  }
 }

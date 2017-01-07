@@ -9,6 +9,10 @@ class ArchiveCacheSplicers private(sdk: AndroidSdk, splicers: Seq[ArchiveCacheSp
     splicers foreach (_ setupSources logger)
   }
 
+  def cleanAll(logger: ProcessLogger): Unit = {
+    splicers foreach (_ clean logger)
+  }
+
   def classpath: Classpath = {
     val empty: Classpath = Attributed blankSeq Seq()
     splicers.foldLeft(empty)(_ ++ _.loadClasspath) ++ (sdk.platforms * "*.jar").classpath

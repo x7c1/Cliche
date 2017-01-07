@@ -1,7 +1,7 @@
 import Extractor.==>
-import KhakiKeys.{khaki, splice, splicerDependencies, splicerSdk, unmanagedDirectory}
+import KhakiKeys.{khaki, splice, splicerClean, splicerDependencies, splicerSdk, unmanagedDirectory}
 import sbt.Configurations.config
-import sbt.Keys.{streams, unmanagedJars, unmanagedSourceDirectories}
+import sbt.Keys.{clean, streams, unmanagedJars, unmanagedSourceDirectories}
 import sbt._
 
 object KhakiKeys {
@@ -14,6 +14,8 @@ object KhakiKeys {
   val splicerSdk = settingKey[AndroidSdk]("Android SDK")
 
   val splice = taskKey[Unit]("expand archives according to dependencies")
+
+  val splicerClean = taskKey[Unit]("delete expanded files")
 }
 
 object SampleSettings {
@@ -28,8 +30,15 @@ object SampleSettings {
   }
 
   def tasks: Seq[SettingsDefinition] = Seq(
+    splicerClean := {
+      splicers.value cleanAll streams.value.log
+    },
     splice := {
       splicers.value runAll streams.value.log
+    },
+    clean := {
+      clean.value
+      splicerClean.value
     }
   )
 
@@ -46,6 +55,15 @@ object SampleSettings {
     tasks ++ settings
   }
 
+}
+
+object FileCleaner {
+  def remove(file: File): Unit = {
+    sbt.Defaults.doClean(
+      clean = Seq(file),
+      preserve = Seq()
+    )
+  }
 }
 
 object DependenciesLoader {
