@@ -16,16 +16,15 @@ trait AndroidSdk {
 object AndroidSdk {
 
   def apply(
-    localProperties: File,
+    sdkRoot: File,
     buildToolsVersion: String,
     compileSdkVersion: Int): AndroidSdk = {
 
-    val root = file(loadPath(localProperties))
     AndroidSdkImpl(
-      root = validate(root),
-      buildTools = validate(root / "build-tools" / buildToolsVersion),
-      platforms = validate(root / "platforms" / s"android-$compileSdkVersion"),
-      extras = validate(root / "extras")
+      root = validate(sdkRoot),
+      buildTools = validate(sdkRoot / "build-tools" / buildToolsVersion),
+      platforms = validate(sdkRoot / "platforms" / s"android-$compileSdkVersion"),
+      extras = validate(sdkRoot / "extras")
     )
   }
 
@@ -34,14 +33,6 @@ object AndroidSdk {
       file
     } else {
       throw new IllegalArgumentException(s"file not found: $file")
-    }
-  }
-
-  def loadPath(localProperties: File): String = {
-    val lines = Source.fromFile(localProperties).getLines()
-    val regex = "^sdk.dir=(.*)".r
-    lines collectFirst { case regex(path) => path } getOrElse {
-      throw new IllegalStateException("sdk.dir not found")
     }
   }
 

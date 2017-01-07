@@ -2,6 +2,8 @@ import Extractor.==>
 import sbt.File
 import sbt.complete.Parser
 
+import scala.io.Source
+
 object PropertyLoader {
 
   import sbt.complete.DefaultParsers._
@@ -9,6 +11,22 @@ object PropertyLoader {
   def dependencies(file: File): Seq[String] = {
     val parser = quoted
     Loader(file, parser) loadMultiple "compile"
+  }
+
+  object sdkRoot {
+
+    def via(localProperties: File): File = {
+      new File(loadPath(localProperties))
+    }
+
+    private def loadPath(localProperties: File): String = {
+      val lines = Source.fromFile(localProperties).getLines()
+      val regex = "^sdk.dir=(.*)".r
+      lines collectFirst { case regex(path) => path } getOrElse {
+        throw new IllegalStateException("sdk.dir not found")
+      }
+    }
+
   }
 
   object buildToolsVersion {
