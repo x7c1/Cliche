@@ -26,7 +26,7 @@ lazy val `android-jars` = project.
       thisProject.value.base / "libs-expanded"
     },
     splicerDependencies := {
-      DependenciesLoader loadFrom file("targets.gradle")
+      PropertyLoader dependencies file("targets.gradle")
     },
     clean := {
       FileCleaner remove (assemblyOutputPath in assembly).value

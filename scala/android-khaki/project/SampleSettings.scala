@@ -1,4 +1,3 @@
-import Extractor.==>
 import KhakiKeys.{splice, splicerClean, splicerDependencies, splicerSdk}
 import sbt.Keys.{clean, streams, unmanagedBase, unmanagedJars, unmanagedSourceDirectories}
 import sbt._
@@ -59,26 +58,4 @@ object FileCleaner {
       preserve = Seq()
     )
   }
-}
-
-object DependenciesLoader {
-
-  def loadFrom(file: File): Seq[String] = {
-    val lines = io.Source.fromFile(file).getLines() collect {
-      case toDependency(line) => line
-    }
-    lines.toSeq
-  }
-
-  private val toDependency: String ==> String = Extractor {
-    import sbt.complete.DefaultParsers._
-    val dependency = {
-      val quoted1 = "'" ~> NotSpace <~ "'"
-      val quoted2 = '"' ~> NotSpace <~ '"'
-      Space.+ ~> "compile" ~> Space.+ ~> (quoted1 | quoted2)
-    }
-    line =>
-      parse(line, dependency).right.toOption
-  }
-
 }
