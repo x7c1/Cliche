@@ -1,4 +1,4 @@
-import KhakiKeys.{dependencies, khaki, sdk, unmanagedDirectory}
+import KhakiKeys.{splicerDependencies, khaki, splicerSdk, unmanagedDirectory}
 import sbtassembly.AssemblyKeys.{assemblyJarName, assemblyOption, assemblyOutputPath}
 
 lazy val sample: Project = project.
@@ -17,7 +17,7 @@ lazy val sample: Project = project.
 lazy val `android-jars` = project.
   settings(SampleSettings.all: _*).
   settings(
-    sdk in khaki := AndroidSdk(
+    splicerSdk := AndroidSdk(
       localProperties = file("local.properties"),
       buildToolsVersion = "23.0.3",
       compileSdkVersion = 25
@@ -25,7 +25,7 @@ lazy val `android-jars` = project.
     unmanagedDirectory in khaki := {
       thisProject.value.base / "libs-expanded"
     },
-    dependencies in khaki := {
+    splicerDependencies := {
       DependenciesLoader loadFrom file("targets.gradle")
     }
   ).
