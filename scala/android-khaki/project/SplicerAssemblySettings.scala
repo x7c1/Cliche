@@ -1,4 +1,4 @@
-import SplicerKeys.{splice, splicerDependencies, splicerSdk}
+import SplicerKeys.{splicerExpand, splicerDependencies, splicerSdk}
 import PropertyLoader.{buildToolsVersion, compileSdkVersion, dependencies, sdkRoot}
 import sbt.Def.{SettingList, SettingsDefinition}
 import sbt.Keys.{clean, thisProject, unmanagedBase, unmanagedJars}
@@ -22,7 +22,7 @@ object SplicerAssemblySettings {
         buildToolsVersion = buildToolsVersion via buildGradle,
         compileSdkVersion = compileSdkVersion via buildGradle
       ),
-      unmanagedBase in splice := {
+      unmanagedBase in splicerExpand := {
         splicerDirectory(thisProject.value)
       },
       splicerDependencies := {
