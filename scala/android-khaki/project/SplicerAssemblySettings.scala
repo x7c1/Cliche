@@ -28,9 +28,8 @@ object SplicerAssemblySettings {
       splicerDependencies := {
         dependencies via dependenciesGradle
       },
-      clean := {
-        FileCleaner remove (assemblyOutputPath in assembly).value
-        clean.value
+      assembly := {
+        assembly.dependsOn(splicerExpand).value
       },
       assemblyOption in assembly ~= {
         _ copy (includeScala = false)
