@@ -1,6 +1,6 @@
 import SplicerKeys.{splicerClean, splicerDependencies, splicerExpand, splicerSdk}
 import sbt.Keys.{clean, streams, unmanagedBase, unmanagedJars, unmanagedSourceDirectories}
-import sbt.{Compile, Def, File, Logger, SettingsDefinition, richFile, settingKey, taskKey}
+import sbt.{Compile, Def, SettingsDefinition, richFile, settingKey, taskKey}
 
 object SplicerKeys {
   val splicerDependencies = settingKey[Seq[String]]("dependencies")
@@ -47,24 +47,6 @@ object SplicerSettings {
 
   def all: SettingsDefinition = {
     new sbt.Def.SettingList(tasks ++ settings)
-  }
-
-}
-
-object FileCleaner {
-
-  def remove(file: File): Unit = {
-    sbt.Defaults.doClean(
-      clean = Seq(file),
-      preserve = Seq()
-    )
-  }
-
-  object withLogging {
-    def remove(file: File): Reader[Logger, Unit] = Reader { logger =>
-      FileCleaner remove file
-      logger info s"[done] removed: $file"
-    }
   }
 
 }

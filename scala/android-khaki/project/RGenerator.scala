@@ -1,8 +1,8 @@
 import sbt.Process.stringToProcess
-import sbt.{File, ProcessLogger}
+import sbt.{File, Logger}
 
 class RGenerator(
-  logger: ProcessLogger,
+  logger: Logger,
   sdk: AndroidSdk,
   manifest: File,
   sourceDestination: File) {

@@ -1,7 +1,7 @@
 import Extractor.==>
 import sbt.Def.Classpath
 import sbt.Path.richFile
-import sbt.{File, Logger, PathFinder, ProcessLogger, globFilter, singleFileFinder}
+import sbt.{File, Logger, PathFinder, globFilter, singleFileFinder}
 
 
 sealed trait ArchiveCacheSplicer {
