@@ -28,7 +28,7 @@ object SplicerSettings {
       splicers.value cleanAll streams.value.log
     },
     splicerExpand := {
-      splicers.value runAll streams.value.log
+      splicers.value.expandAll run streams.value.log
     },
     clean := {
       clean.value

@@ -1,13 +1,14 @@
 import Extractor.==>
 import sbt.Def.Classpath
 import sbt.Path.richFile
-import sbt.{File, PathFinder, ProcessLogger, globFilter, singleFileFinder}
+import sbt.{File, Logger, PathFinder, ProcessLogger, globFilter, singleFileFinder}
 
 
 sealed trait ArchiveCacheSplicer {
-  def setupJars(logger: ProcessLogger): Unit
 
-  def setupSources(logger: ProcessLogger): Unit
+  def setupJars: Reader[Logger, Unit]
+
+  def setupSources: Reader[Logger, Unit]
 
   def clean(logger: ProcessLogger): Unit
 
@@ -63,7 +64,7 @@ class AarCacheExpander(
     Seq(sourceDestination.getAbsoluteFile)
   }
 
-  override def setupJars(logger: ProcessLogger) = {
+  override def setupJars = Reader { logger =>
     val either = for {
       _ <- mkdirs(destination).right
       code <- {
@@ -79,7 +80,7 @@ class AarCacheExpander(
     either.left foreach (logger error _.message)
   }
 
-  override def setupSources(logger: ProcessLogger) = {
+  override def setupSources = Reader { logger =>
     val either = for {
       _ <- mkdirs(sourceDestination).right
       dirs <- resourceDirectories.right
@@ -142,11 +143,11 @@ class JarCacheLoader(
   cacheDirectory: File,
   cache: JarCache) extends ArchiveCacheSplicer {
 
-  override def setupJars(logger: ProcessLogger) = {
+  override def setupJars = Reader { logger =>
     logger info s"[done] skipped: ${cache.moduleId} jar found: ${cache.file}"
   }
 
-  override def setupSources(logger: ProcessLogger) = {
+  override def setupSources = Reader { logger =>
     logger info s"[done] skipped: no source to generate: ${cache.file.name}"
   }
 
