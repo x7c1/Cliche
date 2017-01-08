@@ -12,7 +12,7 @@ object KhakiKeys {
   val splicerClean = taskKey[Unit]("delete expanded files")
 }
 
-object SampleSettings {
+object SplicerSettings {
 
   private lazy val splicers = Def setting {
     val factory = new ArchiveCacheSplicers.Factory(

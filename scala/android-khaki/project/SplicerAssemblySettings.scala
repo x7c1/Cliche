@@ -39,7 +39,7 @@ object SplicerAssemblySettings {
         assemblyDirectory / (assemblyJarName in assembly).value
       }
     )
-    new SettingList(SampleSettings.all ++ settings)
+    new SettingList(SplicerSettings.all ++ settings)
   }
 
   def forClient(providerProject: => Project): SettingsDefinition = {
