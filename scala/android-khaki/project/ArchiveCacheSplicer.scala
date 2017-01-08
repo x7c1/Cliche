@@ -10,7 +10,7 @@ sealed trait ArchiveCacheSplicer {
 
   def setupSources: Reader[Logger, Unit]
 
-  def clean(logger: ProcessLogger): Unit
+  def clean: Reader[Logger, Unit]
 
   def loadClasspath: Classpath
 
@@ -133,7 +133,7 @@ class AarCacheExpander(
         Left(CacheSplicerError.Unexpected(e))
     }
 
-  override def clean(logger: ProcessLogger): Unit = {
+  override def clean = Reader { logger =>
     FileCleaner remove destination
     logger info s"[done] removed: $destination"
   }
@@ -157,7 +157,7 @@ class JarCacheLoader(
 
   override def sourceDirectories = Seq()
 
-  override def clean(logger: ProcessLogger): Unit = {
+  override def clean = Reader { logger =>
     logger info s"[done] skipped: no files to clean: ${cache.moduleId}"
   }
 }

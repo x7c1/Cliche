@@ -10,8 +10,9 @@ class ArchiveCacheSplicers private(sdk: AndroidSdk, splicers: Seq[ArchiveCacheSp
     readers.foldLeft(nop)(_ append _)
   }
 
-  def cleanAll(logger: ProcessLogger): Unit = {
-    splicers foreach (_ clean logger)
+  def cleanAll: Reader[Logger, Unit] = {
+    val nop = Reader[Logger, Unit](_ => ())
+    splicers.map(_.clean).foldLeft(nop)(_ append _)
   }
 
   def classpath: Classpath = {

@@ -25,7 +25,7 @@ object SplicerSettings {
 
   private def tasks = Seq(
     splicerClean := {
-      splicers.value cleanAll streams.value.log
+      splicers.value.cleanAll run streams.value.log
     },
     splicerExpand := {
       splicers.value.expandAll run streams.value.log
