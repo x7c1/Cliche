@@ -2,7 +2,7 @@ import PropertyLoader.{buildToolsVersion, compileSdkVersion, dependencies, sdkRo
 import SplicerKeys.{splicerDependencies, splicerExpand, splicerSdk}
 import sbt.Def.{SettingList, SettingsDefinition}
 import sbt.Keys.{thisProject, unmanagedBase, unmanagedJars}
-import sbt.{File, Logger, Project, ResolvedProject, richFile, richFiles, singleFileFinder}
+import sbt.{File, Project, ResolvedProject, richFile, richFiles, singleFileFinder}
 import sbtassembly.AssemblyKeys.{assembly, assemblyJarName, assemblyOption, assemblyOutputPath}
 import sbtassembly.AssemblyPlugin.autoImport.assemblyExcludedJars
 

@@ -21,6 +21,13 @@ object Reader {
     }
   }
 
+  implicit class RichUnitReaders[A](readers: Seq[Reader[A, Unit]]) {
+    def uniteAll: Reader[A, Unit] = {
+      val nop = Reader[A, Unit](_ => ())
+      readers.foldLeft(nop)(_ append _)
+    }
+  }
+
   implicit def forLogger[A](reader: Reader[Logger, A]): Initialize[Task[A]] = {
     Def task {
       val logger = sbt.Keys.streams.value.log

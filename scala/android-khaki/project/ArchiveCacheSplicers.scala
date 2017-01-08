@@ -1,18 +1,17 @@
 import sbt.Def.Classpath
-import sbt.{Attributed, File, Logger, ModuleID, ProcessLogger, globFilter, singleFileFinder}
+import sbt.{Attributed, File, Logger, ModuleID, globFilter, singleFileFinder}
 
 
 class ArchiveCacheSplicers private(sdk: AndroidSdk, splicers: Seq[ArchiveCacheSplicer]) {
 
   def expandAll: Reader[Logger, Unit] = {
-    val nop = Reader[Logger, Unit](_ => ())
     val readers = splicers.map(_.setupJars) ++ splicers.map(_.setupSources)
-    readers.foldLeft(nop)(_ append _)
+    readers.uniteAll
   }
 
   def cleanAll: Reader[Logger, Unit] = {
-    val nop = Reader[Logger, Unit](_ => ())
-    splicers.map(_.clean).foldLeft(nop)(_ append _)
+    val readers = splicers.map(_.clean)
+    readers.uniteAll
   }
 
   def classpath: Classpath = {
