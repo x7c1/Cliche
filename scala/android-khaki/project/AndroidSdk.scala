@@ -1,7 +1,5 @@
 import sbt._
 
-import scala.io.Source
-
 
 trait AndroidSdk {
   def root: File

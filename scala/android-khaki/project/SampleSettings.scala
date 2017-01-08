@@ -14,7 +14,7 @@ object KhakiKeys {
 
 object SampleSettings {
 
-  lazy val splicers = Def setting {
+  private lazy val splicers = Def setting {
     val factory = new ArchiveCacheSplicers.Factory(
       cacheDirectory = splicerSdk.value.extras / "android/m2repository",
       unmanagedDirectory = (unmanagedBase in splice).value,
@@ -23,7 +23,7 @@ object SampleSettings {
     factory create splicerDependencies.value
   }
 
-  def tasks: Seq[SettingsDefinition] = Seq(
+  private def tasks = Seq(
     splicerClean := {
       splicers.value cleanAll streams.value.log
     },
@@ -36,7 +36,7 @@ object SampleSettings {
     }
   )
 
-  def settings: Seq[SettingsDefinition] = Seq(
+  private def settings = Seq(
     (unmanagedSourceDirectories in Compile) ++= {
       splicers.value.sourceDirectories
     },
@@ -45,8 +45,8 @@ object SampleSettings {
     }
   )
 
-  def all: Seq[SettingsDefinition] = {
-    tasks ++ settings
+  def all: SettingsDefinition = {
+    new sbt.Def.SettingList(tasks ++ settings)
   }
 
 }
