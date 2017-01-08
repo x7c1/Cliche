@@ -1,4 +1,4 @@
-import KhakiKeys.{splice, splicerDependencies, splicerSdk}
+import SplicerKeys.{splice, splicerDependencies, splicerSdk}
 import PropertyLoader.{buildToolsVersion, compileSdkVersion, dependencies, sdkRoot}
 import sbt.Def.{SettingList, SettingsDefinition}
 import sbt.Keys.{clean, thisProject, unmanagedBase, unmanagedJars}

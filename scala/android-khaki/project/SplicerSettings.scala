@@ -1,8 +1,8 @@
-import KhakiKeys.{splice, splicerClean, splicerDependencies, splicerSdk}
+import SplicerKeys.{splice, splicerClean, splicerDependencies, splicerSdk}
 import sbt.Keys.{clean, streams, unmanagedBase, unmanagedJars, unmanagedSourceDirectories}
 import sbt._
 
-object KhakiKeys {
+object SplicerKeys {
   val splicerDependencies = settingKey[Seq[String]]("dependencies")
 
   val splicerSdk = settingKey[AndroidSdk]("Android SDK")
