@@ -133,9 +133,8 @@ class AarCacheExpander(
         Left(CacheSplicerError.Unexpected(e))
     }
 
-  override def clean = Reader { logger =>
-    FileCleaner remove destination
-    logger info s"[done] removed: $destination"
+  override def clean = {
+    FileCleaner.Readers remove destination
   }
 }
 
