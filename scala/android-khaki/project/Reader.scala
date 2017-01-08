@@ -13,7 +13,7 @@ case class Reader[X, A](run: X => A){
 object Reader {
   import scala.language.implicitConversions
 
-  implicit def toInitializeTask[A](reader: Reader[Logger, A]): Initialize[Task[A]] = {
+  implicit def forLogger[A](reader: Reader[Logger, A]): Initialize[Task[A]] = {
     Def task {
       val logger = sbt.Keys.streams.value.log
       reader run logger

@@ -1,8 +1,8 @@
-import SplicerKeys.{splicerExpand, splicerDependencies, splicerSdk}
 import PropertyLoader.{buildToolsVersion, compileSdkVersion, dependencies, sdkRoot}
+import SplicerKeys.{splicerDependencies, splicerExpand, splicerSdk}
 import sbt.Def.{SettingList, SettingsDefinition}
-import sbt.Keys.{clean, thisProject, unmanagedBase, unmanagedJars}
-import sbt.{File, Project, ResolvedProject, richFile, richFiles, singleFileFinder}
+import sbt.Keys.{thisProject, unmanagedBase, unmanagedJars}
+import sbt.{File, Logger, Project, ResolvedProject, richFile, richFiles, singleFileFinder}
 import sbtassembly.AssemblyKeys.{assembly, assemblyJarName, assemblyOption, assemblyOutputPath}
 import sbtassembly.AssemblyPlugin.autoImport.assemblyExcludedJars
 
@@ -38,7 +38,10 @@ object SplicerAssemblySettings {
         assemblyDirectory(thisProject.value) / (assemblyJarName in assembly).value
       }
     )
-    new SettingList(SplicerSettings.all ++ settings)
+    new SettingList(settings ++
+      SplicerSettings.all ++
+      SplicerAssemblyClean.settings
+    )
   }
 
   def forClient(providerProject: => Project): SettingsDefinition = {
