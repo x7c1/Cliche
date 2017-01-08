@@ -60,7 +60,7 @@ object FileCleaner {
     )
   }
 
-  object Readers {
+  object withLogging {
     def remove(file: File): Reader[Logger, Unit] = Reader { logger =>
       FileCleaner remove file
       logger info s"[done] removed: $file"

@@ -134,7 +134,7 @@ class AarCacheExpander(
     }
 
   override def clean = {
-    FileCleaner.Readers remove destination
+    FileCleaner.withLogging remove destination
   }
 }
 

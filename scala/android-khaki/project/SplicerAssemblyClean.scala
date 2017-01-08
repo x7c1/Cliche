@@ -13,6 +13,6 @@ object SplicerAssemblyClean {
   ))
 
   private val assemblyClean = Def taskDyn {
-    FileCleaner.Readers remove (assemblyOutputPath in assembly).value
+    FileCleaner.withLogging remove (assemblyOutputPath in assembly).value
   }
 }
