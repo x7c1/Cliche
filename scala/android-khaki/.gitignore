@@ -5,6 +5,6 @@ target
 
 local.properties
 
-libs-generated
+libs-assembled
 
 libs-expanded

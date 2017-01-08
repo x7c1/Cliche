@@ -10,7 +10,7 @@ import sbtassembly.AssemblyPlugin.autoImport.assemblyExcludedJars
 object SplicerAssemblySettings {
 
   def forProvider(
-    assemblyDirectory: => File,
+    assemblyDirectory: ResolvedProject => File,
     splicerDirectory: ResolvedProject => File,
     localProperties: File,
     buildGradle: File,
@@ -36,7 +36,7 @@ object SplicerAssemblySettings {
         _ copy (includeScala = false)
       },
       assemblyOutputPath in assembly := {
-        assemblyDirectory / (assemblyJarName in assembly).value
+        assemblyDirectory(thisProject.value) / (assemblyJarName in assembly).value
       }
     )
     new SettingList(SplicerSettings.all ++ settings)
