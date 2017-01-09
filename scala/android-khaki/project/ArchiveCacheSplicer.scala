@@ -53,11 +53,11 @@ class AarCacheExpander(
   }
 
   override def loadClasspath = {
-    val dirs = Seq(
-      destination / "classes.jar",
-      destination / "libs" / "*.jar"
+    val finders = Seq(
+      PathFinder(destination / "classes.jar"),
+      destination / "libs" * "*.jar"
     )
-    dirs.foldLeft(PathFinder.empty)(_ +++ _).classpath
+    finders.foldLeft(PathFinder.empty)(_ +++ _).classpath
   }
 
   override def sourceDirectories = {
