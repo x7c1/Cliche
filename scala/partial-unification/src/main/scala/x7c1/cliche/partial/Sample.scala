@@ -51,20 +51,20 @@ trait Either2[L, R]
 object Either2 {
 
   /*
-  implicit def toOption2[A, L]: CanConvert[A, ({type F[X] = Either2[L, X]})#F, Option2] =
-    new CanConvert[A, ({type F[X] = Either2[L, X]})#F, Option2] {
+  implicit def toOption2[A, L]: CanConvert[A, Either2[L, ?], Option2] =
+    new CanConvert[A, Either2[L, ?], Option2] {
       override def from(x: Either2[L, A]): Option2[A] = ???
     }
   */
 
   // same as above
-  implicit def toOption2[A, L]: CanConvert[A, ({type F[X] = Either2[L, X]})#F, Option2] = {
+  implicit def toOption2[A, L]: CanConvert[A, Either2[L, ?], Option2] = {
     (x: Either2[L, A]) => ???
   }
 
-  implicit def monad[L, R]: Monad[({type F[X] = Either2[L, X]})#F] = ???
+  implicit def monad[L, R]: Monad[Either2[L, ?]] = ???
 
-  implicit class MonadLike[L, R](x: Either2[L, R]) extends Impl[R, ({type F[X] = Either2[L, X]})#F](x)
+  implicit class MonadLike[L, R](x: Either2[L, R]) extends Impl[R, Either2[L, ?]](x)
 
 }
 
