@@ -5,7 +5,5 @@ object Extractor {
 }
 
 class Extractor[A, B](f: A => Option[B]) {
-  def unapply(files: A): Option[B] = {
-    f(files)
-  }
+  def unapply(x: A): Option[B] = f(x)
 }

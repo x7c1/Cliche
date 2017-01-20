@@ -1,23 +1,18 @@
 
-import sbtassembly.AssemblyKeys.{assemblyJarName, assemblyOption, assemblyOutputPath}
+import SplicerAssemblySettings.{forClient, forProvider}
 
-lazy val sample: Project = project.
-  settings(
-    unmanagedJars in Compile ++= {
-      val output = (assemblyOutputPath in assembly in `android-jars`).value
-      output.get.classpath
-    }
-  )
+lazy val sample = project.
+  settings(forClient(
+    providerProject = `android-jars`
+  ))
 
 lazy val `android-jars` = project.
-  settings(SampleSettings.all: _*).
-  settings(
-    assemblyOption in assembly ~= {
-      _ copy (includeScala = false)
-    },
-    assemblyOutputPath in assembly := {
-      sample.base / "libs-generated" / (assemblyJarName in assembly).value
-    }
-  )
+  settings(forProvider(
+    assemblyDirectory = _.base / "libs-assembled",
+    splicerDirectory = _.base / "libs-expanded",
+    localProperties = file("local.properties"),
+    buildGradle = file("build.gradle"),
+    dependenciesGradle = file("targets.gradle")
+  ))
 
 lazy val root = Project(id = "root", base = file("."))

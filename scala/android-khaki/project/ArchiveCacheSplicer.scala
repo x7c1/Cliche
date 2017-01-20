@@ -1,13 +1,16 @@
 import Extractor.==>
 import sbt.Def.Classpath
 import sbt.Path.richFile
-import sbt.{Attributed, File, PathFinder, ProcessLogger, globFilter, singleFileFinder}
+import sbt.{File, Logger, PathFinder, globFilter, singleFileFinder}
 
 
 sealed trait ArchiveCacheSplicer {
-  def setupJars(logger: ProcessLogger): Unit
 
-  def setupSources(logger: ProcessLogger): Unit
+  def setupJars: Reader[Logger, Unit]
+
+  def setupSources: Reader[Logger, Unit]
+
+  def clean: Reader[Logger, Unit]
 
   def loadClasspath: Classpath
 
@@ -22,7 +25,7 @@ object ArchiveCacheSplicer {
         case aar: AarCache =>
           new AarCacheExpander(cacheDirectory, unmanagedDirectory, sdk, aar)
         case jar: JarCache =>
-          new JarCacheWatcher(cacheDirectory, jar)
+          new JarCacheLoader(cacheDirectory, jar)
         case unknown =>
           val name = unknown.getClass.getName
           throw new IllegalArgumentException(
@@ -50,18 +53,18 @@ class AarCacheExpander(
   }
 
   override def loadClasspath = {
-    val dirs = Seq(
-      destination / "classes.jar",
-      destination / "libs" / "*.jar"
+    val finders = Seq(
+      PathFinder(destination / "classes.jar"),
+      destination / "libs" * "*.jar"
     )
-    dirs.foldLeft(PathFinder.empty)(_ +++ _).classpath
+    finders.foldLeft(PathFinder.empty)(_ +++ _).classpath
   }
 
   override def sourceDirectories = {
     Seq(sourceDestination.getAbsoluteFile)
   }
 
-  override def setupJars(logger: ProcessLogger) = {
+  override def setupJars = Reader { logger =>
     val either = for {
       _ <- mkdirs(destination).right
       code <- {
@@ -77,7 +80,7 @@ class AarCacheExpander(
     either.left foreach (logger error _.message)
   }
 
-  override def setupSources(logger: ProcessLogger) = {
+  override def setupSources = Reader { logger =>
     val either = for {
       _ <- mkdirs(sourceDestination).right
       dirs <- resourceDirectories.right
@@ -129,18 +132,22 @@ class AarCacheExpander(
       case e: Exception =>
         Left(CacheSplicerError.Unexpected(e))
     }
+
+  override def clean = {
+    FileCleaner.withLogging remove destination
+  }
 }
 
-class JarCacheWatcher(
+class JarCacheLoader(
   cacheDirectory: File,
   cache: JarCache) extends ArchiveCacheSplicer {
 
-  override def setupJars(logger: ProcessLogger) = {
-    logger info s"[done] ${cache.moduleId} jar found: ${cache.file}"
+  override def setupJars = Reader { logger =>
+    logger info s"[done] skipped: ${cache.moduleId} jar found: ${cache.file}"
   }
 
-  override def setupSources(logger: ProcessLogger) = {
-    logger info s"[skip] no source to generate: ${cache.file}"
+  override def setupSources = Reader { logger =>
+    logger info s"[done] skipped: no source to generate: ${cache.file.name}"
   }
 
   override def loadClasspath: Classpath = {
@@ -149,4 +156,7 @@ class JarCacheWatcher(
 
   override def sourceDirectories = Seq()
 
+  override def clean = Reader { logger =>
+    logger info s"[done] skipped: no files to clean: ${cache.moduleId}"
+  }
 }

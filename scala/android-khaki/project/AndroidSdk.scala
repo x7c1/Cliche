@@ -1,7 +1,5 @@
 import sbt._
 
-import scala.io.Source
-
 
 trait AndroidSdk {
   def root: File
@@ -16,24 +14,23 @@ trait AndroidSdk {
 object AndroidSdk {
 
   def apply(
-    localProperties: File,
+    sdkRoot: File,
     buildToolsVersion: String,
-    platformsVersion: String): AndroidSdk = {
+    compileSdkVersion: Int): AndroidSdk = {
 
-    val root = file(loadPath(localProperties))
     AndroidSdkImpl(
-      root = root,
-      buildTools = root / "build-tools" / buildToolsVersion,
-      platforms = root / "platforms" / platformsVersion,
-      extras = root / "extras"
+      root = validate(sdkRoot),
+      buildTools = validate(sdkRoot / "build-tools" / buildToolsVersion),
+      platforms = validate(sdkRoot / "platforms" / s"android-$compileSdkVersion"),
+      extras = validate(sdkRoot / "extras")
     )
   }
 
-  def loadPath(localProperties: File): String = {
-    val lines = Source.fromFile(localProperties).getLines()
-    val regex = "^sdk.dir=(.*)".r
-    lines collectFirst { case regex(path) => path } getOrElse {
-      throw new IllegalStateException("sdk.dir not found")
+  private def validate(file: File): File = {
+    if (file.exists()) {
+      file
+    } else {
+      throw new IllegalArgumentException(s"file not found: $file")
     }
   }
 
