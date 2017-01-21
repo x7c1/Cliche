@@ -1,0 +1,8 @@
+[package]
+name = "rust-snow"
+version = "0.1.0"
+authors = ["haco"]
+
+[dependencies]
+iron = "0.4.*"
+router = "*"
